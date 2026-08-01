@@ -1,253 +1,321 @@
-<!---TMF2034: Database Concept & Design (G07)--->
-<!---1. Mohammad Hamka Izzuddin Bin Mohamad Yahya (73571)--->
-<!---2. Harith Zakwan Bin Zakaria (73484)------------------->
-<!---3. Iman Tarmizi Rosalina (73496)----------------------->
-<!---4. Faizatul Fitri Bin Boestamam (75351)---------------->
-
 <?php
-	include(__DIR__ . '/../dbConnect.php');
+    include(__DIR__ . '/../dbConnect.php');
 ?>
-
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-	<title>TreePacific</title>
-	<link rel="icon" type="image/x-icon" href="/tree/public/img/tree.PNG">
-	<style type="text/css">
-		.header{
-			display: flex;
-			padding: 5px;
-			background-color: #36454f;
-			align-items: top;
-			font-family: 'Trebuchet MS', sans-serif;
-		}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreePacific - Staff Dashboard</title>
+    <link rel="icon" type="image/x-icon" href="/tree/public/img/tree.PNG">
+    
+    <!-- Modern Typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-		ul {
-            list-style-type: none;
+    <style>
+        :root {
+            --primary: #128C7E;
+            --primary-hover: #075E54;
+            --accent: #04AA6D;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --radius: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            overflow: hidden;
-            background-color: #333;
         }
 
-        li {
-            float: left;
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            line-height: 1.6;
         }
 
-        li a {
-            display: block;
-            color: white;
-            text-align: center;
-            padding: 14px 16px;
+        /* --- Header & Branding --- */
+        .header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 2rem;
+            background-color: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand img {
+            width: 42px;
+            height: 42px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .brand-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        .page-badge {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* --- Navigation Bar --- */
+        .navbar {
+            background-color: #161f30;
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1.5rem;
+            overflow-x: auto;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 0.25rem;
+            max-width: 1200px;
+            margin: 0 auto;
+            white-space: nowrap;
+        }
+
+        .navbar li a {
+            display: inline-block;
+            color: var(--text-muted);
             text-decoration: none;
+            padding: 0.85rem 1rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
         }
 
-        li a:hover:not(.active) {
-            background-color: #04AA6D;
+        .navbar li a:hover {
+            color: var(--text-main);
+            background-color: rgba(255, 255, 255, 0.03);
         }
 
-        .active {
-            background-color: #04AA6D;
+        .navbar li a.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            background-color: rgba(18, 140, 126, 0.08);
         }
 
-		.logo img{
-			width: 65px;
-			padding-left: 100px; 
-			padding-right: 5px;
-		}
+        .navbar li.logout-item {
+            margin-left: auto;
+        }
 
-		.logotext h1{
-			padding-left: 5px;
-			padding-right: 5px;
-			font-size: 25px;
-			color: #128C7E;
-		}
+        .navbar li.logout-item a:hover {
+            color: #ef4444;
+            border-bottom-color: transparent;
+        }
 
-		.logintext h1{
-			padding-left: 5px;
-			font-size: 25px;
-		}
+        /* --- Main Content Area --- */
+        .main-container {
+            flex: 1;
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 3rem 1.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2.5rem;
+            align-items: center;
+        }
 
-		body 
-		{ 
-			background-color: #075E54;
-			margin: 0;
-		}
-		
-		input[type=submit] {
-			background-color: #c45b56;
-			color: #ecd846;
-			font-family: Helvetica;
-		}
+        /* Hero / Graphic Section */
+        .hero-card {
+            background: linear-gradient(135deg, rgba(18, 140, 126, 0.15) 0%, rgba(30, 41, 59, 0.5) 100%);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 3rem 2rem;
+            text-align: center;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-		.context {
-			height: 600px;
-			align-items: center;
-			display: flex;
-		}
+        .hero-card img {
+            width: 140px;
+            height: auto;
+            margin-bottom: 1.5rem;
+            filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
 
-		.contextimg img{
-			width: 300px;
-			position: relative;
-			left: 270px;
-		
-		}
+        .hero-card img:hover {
+            transform: translateY(-4px);
+        }
 
-		figcaption{
-			position: relative;
-			left: 270px;
-			color: white;
-			font-size: 20px;
-			font-family: 'Trebuchet MS', sans-serif;
-			text-align: center;
+        .hero-card h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 0.25rem;
+        }
 
-		}
+        .hero-card p {
+            font-size: 0.95rem;
+            color: var(--primary);
+            font-weight: 500;
+        }
 
-		.container {
-			background-color: white;
-			padding-left: 20px;
-			padding-right: 20px;
-			border-radius: 12px;
-			width: 9cm;
-			height: 250px;
-			position: absolute;
-			right: 250px;			
-		}
+        /* Content Card / About Section */
+        .info-card {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius);
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+        }
 
-		.form p::first-letter{
-			font-size: 200%;
-            color: #128C7E;
-		}
-		
-		.container button{
-			display: block;
-			border-radius: 12px;
-			font-size: 12px;
-			width: 7.5cm;
-			padding: 10px ;
-			margin-right: auto;
-			margin-left: auto;
-			background-color: #128C7E;
-			font-family: 'Trebuchet MS', sans-serif;
-			color: white;
-			width: 7.5cm;
-		}
-		
-		.container a {
-			text-decoration: none;
-			font-family: 'Trebuchet MS', sans-serif;
-			color: white;
-			width: 7.5cm;
-		}
+        .card-header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-		.formheader{
-			font-family: 'Trebuchet MS', sans-serif;
-			font-size: 20px;
-		}
+        .card-header h3 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
 
-		.form input{
-			display: block;
-			border-radius: 12px;
-			font-size: 12px;
-			width: 7.5cm;
-			padding: 10px ;
-			margin-right: auto;
-			margin-left: auto;
-		}
+        .card-header h3 span {
+            color: var(--primary);
+        }
 
-		.submit{
-			background-color: #128C7E;
-			font-family: 'Trebuchet MS', sans-serif;
-			color: white;
-			width: 7.5cm;
-		}
+        .quote-content {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
 
-		.formfooter {
-			font-family: 'Trebuchet MS', sans-serif;
-			text-align: center;
-			font-size: 13px;
-		}
+        .quote-content::first-letter {
+            font-size: 1.8em;
+            font-weight: 700;
+            color: var(--primary);
+            float: left;
+            line-height: 1;
+            padding-right: 6px;
+        }
 
-		.formfooter p{
-			color: grey;
-		}
+        /* --- Footer --- */
+        .footer {
+            border-top: 1px solid var(--border-color);
+            padding: 1.5rem;
+            text-align: center;
+            background-color: var(--bg-dark);
+            margin-top: auto;
+        }
 
-		.formfooter a:link{
-			color: #128C7E;
-			text-decoration: none;
-			font-weight: bold;
-		}
+        .footer p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+        }
 
-		.formfooter a:visited{
-			color: #128C7E;
-			text-decoration: none;
-			font-weight: bold;
-		}
+        /* --- Responsive Design --- */
+        @media (max-width: 850px) {
+            .main-container {
+                grid-template-columns: 1fr;
+                padding: 2rem 1rem;
+            }
 
-		.footer{
-			background-color: #36454f;
-			text-align: center;
-			height: 90px;
-			color: white;
-			font-size: 12px;
-		}
+            .header {
+                padding: 1rem;
+            }
 
-		.footer hr{
-			width: 80%;
-		}
-
-	</style>
+            .navbar {
+                padding: 0 0.5rem;
+            }
+            
+            .navbar li a {
+                padding: 0.75rem 0.6rem;
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 </head>
 <body>
-	<div class = "header">
-		<div class="logo">
-			<img src = "/tree/public/img/tree.PNG" alt="logo" >
-		</div>
-		<div class="logotext">
-			<h1>TreePacific</h1>
-		</div>
-		<div class="logintext"> 
-			<h1>Homepage</h1>
-		</div>
-	</div>
 
-	<div class = "navbar">
-	<ul>
-        <li><a class = "active" href = "MenuStaff.php"> Homepage</a></li>
-        <li><a href = "viewUser.php"> User</a></li>
-        <li><a href = "viewCompany.php"> Companies </a></li>
-        <li><a href = "viewTree.php"> Trees</a></li>
-        <li><a href = "viewBlock.php"> Blocks </a></li>
-        <li><a href = "viewOrchard.php"> Orchards</a></li>
-        <li><a href = "viewSale.php"> Sales </a></li>
-        <li style = "float: right"><a href="Logout.php">Log Out</a></li>
-    </ul>
-	</div>
+    <!-- Header Section -->
+    <header class="header">
+        <div class="brand">
+            <img src="/tree/public/img/tree.PNG" alt="TreePacific Logo">
+            <h1 class="brand-title">TreePacific</h1>
+        </div>
+        <span class="page-badge">Staff Dashboard</span>
+    </header>
 
- 	<div class="context">
-		<div class="contextimg">
-			<figure>
-			<img src = "/tree/public/img/tree.PNG" alt="TreePacificlogo">
-			<figcaption><h3>TreePacific</h3>Tree Profiling Management System</figcaption>
-			</figure>
-		</div>
-		<div class="container">
-			<div class="formheader">
-				<h3><span style = "color: #128C7E;">TreePacific </span>| About</h3>
-			</div>
-			<div class = "form">
-				<hr>
-				<p style = "text-align: justify">
-				It costs 38 trillion dollars to produce oxygen for all humans on the planet for six months. This indicates that even if we spent all of the money in the world, we would be unable to provide oxygen for all humans for six months. Trees do it for free.
-				</p>
-			
-			</div>
-		</div>
-	</div>
-	<div class="footer">
-		<br>
-		<hr>
-		<p>&copy; 2022 TREEPACIFIC. ALL RIGHTS RESERVED</p>
-	</div>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <ul>
+            <li><a class="active" href="MenuStaff.php">Homepage</a></li>
+            <li><a href="viewUser.php">User</a></li>
+            <li><a href="viewCompany.php">Companies</a></li>
+            <li><a href="viewTree.php">Trees</a></li>
+            <li><a href="viewBlock.php">Blocks</a></li>
+            <li><a href="viewOrchard.php">Orchards</a></li>
+            <li><a href="viewSale.php">Sales</a></li>
+            <li class="logout-item"><a href="Logout.php">Log Out</a></li>
+        </ul>
+    </nav>
+
+    <!-- Main Content Grid -->
+    <main class="main-container">
+        
+        <!-- System Hero Graphic -->
+        <div class="hero-card">
+            <img src="/tree/public/img/tree.PNG" alt="TreePacific Graphic">
+            <h2>TreePacific</h2>
+            <p>Tree Profiling Management System</p>
+        </div>
+
+        <!-- Information / About Box -->
+        <article class="info-card">
+            <div class="card-header">
+                <h3><span>TreePacific</span> &mdash; About</h3>
+            </div>
+            <div class="quote-content">
+                It costs 38 trillion dollars to produce oxygen for all humans on the planet for six months. This indicates that even if we spent all of the money in the world, we would be unable to provide oxygen for all humans for six months. Trees do it for free.
+            </div>
+        </article>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; <?php echo date("Y"); ?> TREEPACIFIC. ALL RIGHTS RESERVED.</p>
+    </footer>
+
 </body>
 </html>
