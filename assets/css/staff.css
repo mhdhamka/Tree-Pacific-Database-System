@@ -1,42 +1,81 @@
+/* ==========================================================================
+   1. CSS Custom Properties / Theme Tokens
+   ========================================================================== */
 :root {
+    /* Brand Colors */
     --primary: #2e7d32;
     --primary-hover: #1b5e20;
     --primary-light: #e8f5e9;
+    --primary-glow: rgba(46, 125, 50, 0.15);
+
+    /* Contextual UI Colors */
     --secondary: #64748b;
     --danger: #dc2626;
     --danger-light: #fef2f2;
     --dark: #0f172a;
+    
+    /* Surface & Backgrounds */
     --bg-body: #f4f6f9;
     --bg-sidebar: #1e293b;
     --bg-sidebar-hover: #334155;
+    --bg-surface: #ffffff;
+    
+    /* Typography Colors */
+    --text-main: #1e293b;
+    --text-muted: #64748b;
     --text-sidebar: #94a3b8;
     --text-sidebar-active: #ffffff;
+    
+    /* Layout Dimensions */
     --sidebar-width: 280px;
+    
+    /* Borders & Shadows */
     --border-color: #e2e8f0;
+    --border-hover: #cbd5e1;
     --radius: 12px;
+    --radius-md: 8px;
+    --radius-sm: 6px;
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
 }
 
+/* ==========================================================================
+   2. Base & Universal Reset
+   ========================================================================== */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 body {
     background-color: var(--bg-body);
     color: var(--dark);
     overflow-x: hidden;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Layout Structure */
+/* Base Icon Centering and Alignment Fixes */
+i, [class^="bi-"], [class*=" fa-"] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    line-height: 1;
+}
+
+/* App Layout Wrapper */
 .app-wrapper {
     display: flex;
     min-height: 100vh;
 }
 
-/* Sidebar Styling */
+/* ==========================================================================
+   3. Sidebar Navigation
+   ========================================================================== */
 .sidebar {
     width: var(--sidebar-width);
     background: var(--bg-sidebar);
@@ -46,7 +85,7 @@ body {
     z-index: 100;
     display: flex;
     flex-direction: column;
-    transition: all 0.3s ease;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-brand {
@@ -86,12 +125,13 @@ body {
     width: 38px;
     height: 38px;
     border-radius: 50%;
-    background: var(--primary);
+    background: linear-gradient(135deg, var(--primary), var(--primary-hover));
     color: #ffffff;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 600;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .sidebar-user-info {
@@ -137,14 +177,16 @@ body {
     text-decoration: none;
     font-size: 0.95rem;
     font-weight: 500;
-    border-radius: 8px;
-    transition: all 0.2s ease;
+    border-radius: var(--radius-md);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-link i {
     font-size: 1.1rem;
     width: 20px;
     text-align: center;
+    opacity: 0.85;
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 .sidebar-link:hover {
@@ -152,13 +194,20 @@ body {
     color: var(--text-sidebar-active);
 }
 
+.sidebar-link:hover i {
+    opacity: 1;
+    transform: translateX(2px);
+}
+
 .sidebar-link.active {
     background-color: var(--primary);
     color: #ffffff;
+    box-shadow: 0 4px 12px var(--primary-glow);
 }
 
 .sidebar-link.active i {
     color: #ffffff;
+    opacity: 1;
 }
 
 .sidebar-link.logout-link {
@@ -168,11 +217,13 @@ body {
 }
 
 .sidebar-link.logout-link:hover {
-    background-color: rgba(239, 68, 68, 0.1);
+    background-color: rgba(239, 68, 68, 0.12);
     color: #ef4444;
 }
 
-/* Main Content Styling */
+/* ==========================================================================
+   4. Main Section & Topbar
+   ========================================================================== */
 .main-content {
     margin-left: var(--sidebar-width);
     width: calc(100% - var(--sidebar-width));
@@ -186,20 +237,21 @@ body {
     background: #ffffff;
     height: 70px;
     border-bottom: 1px solid var(--border-color);
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    box-shadow: var(--shadow-sm);
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 0 32px;
     position: sticky;
     top: 0;
-    z-index: 9;
+    z-index: 90;
 }
 
 .topbar-title {
     font-size: 1.25rem;
     font-weight: 700;
     color: var(--dark);
+    letter-spacing: -0.01em;
 }
 
 .content-body {
@@ -207,7 +259,7 @@ body {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    gap: 32px;
+    gap: 24px;
 }
 
 /* Breadcrumb Navigation */
@@ -223,6 +275,7 @@ body {
     color: var(--secondary);
     text-decoration: none;
     font-weight: 500;
+    transition: color 0.15s ease;
 }
 
 .breadcrumb a:hover {
@@ -238,7 +291,9 @@ body {
     font-weight: 600;
 }
 
-/* Card & Table Styling */
+/* ==========================================================================
+   5. Cards & Form Controls
+   ========================================================================== */
 .card {
     background: #ffffff;
     border-radius: var(--radius);
@@ -290,23 +345,29 @@ body {
     left: 14px;
     color: var(--secondary);
     font-size: 1rem;
+    pointer-events: none;
+    transition: color 0.2s ease;
+}
+
+.input-wrapper:focus-within i {
+    color: var(--primary);
 }
 
 .form-control-input {
     width: 100%;
     padding: 10px 14px 10px 40px;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-md);
     font-size: 0.9rem;
     color: var(--dark);
     background-color: #ffffff;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .form-control-input:focus {
     outline: none;
     border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.15);
+    box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .radio-group {
@@ -337,6 +398,9 @@ body {
     gap: 12px;
 }
 
+/* ==========================================================================
+   6. Tables & Data Display
+   ========================================================================== */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -357,7 +421,7 @@ thead tr {
 th {
     padding: 14px 24px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.05em;
     color: var(--secondary);
@@ -375,57 +439,67 @@ tbody tr:last-child td {
     border-bottom: none;
 }
 
+tbody tr {
+    transition: background-color 0.15s ease;
+}
+
 tbody tr:hover {
     background-color: #f8fafc;
 }
 
-/* Buttons & Badges */
+/* Table Active State when a block filter is selected */
+table tbody tr.table-active {
+    background-color: rgba(46, 125, 50, 0.06) !important;
+    border-left: 4px solid var(--primary);
+}
+
+/* ==========================================================================
+   7. Buttons, Badges, & Action Indicators
+   ========================================================================== */
 .btn {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 8px;
     padding: 8px 16px;
     font-size: 0.875rem;
-    font-weight: 500;
-    border-radius: 6px;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
     text-decoration: none;
-    border: none;
+    border: 1px solid transparent;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:active {
+    transform: translateY(1px);
 }
 
 .btn-primary {
     background-color: var(--primary);
     color: #ffffff;
+    box-shadow: 0 2px 4px rgba(46, 125, 50, 0.2);
 }
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
 }
 
-.alert {
-    padding: 12px 16px;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    margin-bottom: 20px;
+.btn-secondary {
+    background-color: #f1f5f9;
+    color: var(--secondary);
+    border-color: var(--border-color);
 }
 
-.alert-success {
-    background-color: var(--primary-light);
-    color: var(--primary-hover);
-    border: 1px solid #c8e6c9;
-}
-
-.alert-danger {
-    background-color: var(--danger-light);
-    color: var(--danger);
-    border: 1px solid #fecaca;
+.btn-secondary:hover {
+    background-color: #e2e8f0;
+    color: var(--dark);
 }
 
 .btn-sm {
     padding: 6px 12px;
     font-size: 0.8rem;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
 }
 
 .btn-outline-primary {
@@ -440,7 +514,7 @@ tbody tr:hover {
 }
 
 .btn-outline-danger {
-    background: #fef2f2;
+    background: var(--danger-light);
     border: 1px solid #fecaca;
     color: var(--danger);
 }
@@ -450,10 +524,39 @@ tbody tr:hover {
     color: #b91c1c;
 }
 
+.btn-outline-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.825rem;
+    font-weight: 500;
+    color: #4b5563;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-outline-secondary:hover {
+    color: #111827;
+    background-color: #f9fafb;
+    border-color: #9ca3af;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Highlight state for active filter button */
+tr.table-active .btn-outline-secondary {
+    color: #047857;
+    background-color: #ecfdf5;
+    border-color: var(--primary);
+}
+
 .btn-action {
     padding: 6px 12px;
     font-size: 0.8rem;
-    border-radius: 6px;
+    border-radius: var(--radius-sm);
     text-decoration: none;
     font-weight: 500;
     display: inline-flex;
@@ -472,8 +575,8 @@ tbody tr:hover {
 }
 
 .btn-delete {
-    background: #fef2f2;
-    color: #dc2626;
+    background: var(--danger-light);
+    color: var(--danger);
     border: 1px solid #fecaca;
 }
 
@@ -481,8 +584,36 @@ tbody tr:hover {
     background: #fee2e2;
 }
 
-.badge-usertype,
-.badge-status {
+/* Assign Button Style */
+.btn-assign {
+    color: var(--primary);
+    border: 1px solid var(--primary);
+    background-color: transparent;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    border-radius: var(--radius-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    text-decoration: none;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-assign:hover {
+    color: #ffffff;
+    background-color: var(--primary);
+    border-color: var(--primary);
+}
+
+.btn-assign:focus, 
+.btn-assign:active {
+    box-shadow: 0 0 0 3px var(--primary-glow);
+    outline: none;
+}
+
+/* Badges & Text Styling */
+.badge-usertype {
     display: inline-block;
     padding: 4px 10px;
     border-radius: 20px;
@@ -492,21 +623,42 @@ tbody tr:hover {
     color: var(--primary);
 }
 
-.badge-block,
+.badge-status {
+    display: inline-block;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.775rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #065f46;
+    background-color: #d1fae5;
+    border-radius: 20px;
+}
+
 .badge-chip {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
+    padding: 0.25rem 0.6rem;
+    font-size: 0.825rem;
     font-weight: 600;
-    background: #f1f5f9;
-    color: var(--secondary);
-    border: 1px solid var(--border-color);
+    color: #374151;
+    background-color: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: var(--radius-sm);
+}
+
+.badge-block {
+    display: inline-block;
+    padding: 0.2rem 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #047857;
+    background-color: #ecfdf5;
+    border-radius: 4px;
 }
 
 .price-text {
     font-weight: 600;
-    color: var(--primary);
+    color: #1f2937;
 }
 
 .company-name {
@@ -517,9 +669,157 @@ tbody tr:hover {
 .actions-cell {
     display: flex;
     gap: 8px;
+    align-items: center;
 }
 
-/* Footer Styling */
+/* Alert Boxes */
+.alert {
+    padding: 12px 16px;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.alert-success {
+    background-color: var(--primary-light);
+    color: var(--primary-hover);
+    border: 1px solid #a7f3d0;
+}
+
+.alert-danger {
+    background-color: var(--danger-light);
+    color: var(--danger);
+    border: 1px solid #fecaca;
+}
+
+/* Map Location Link */
+.map-link {
+    color: #2563eb;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.15s ease;
+}
+
+.map-link:hover {
+    text-decoration: underline;
+    color: #1d4ed8;
+}
+
+/* ==========================================================================
+   8. Layout Controls & Search Inputs
+   ========================================================================== */
+.table-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.search-box {
+    position: relative;
+    flex: 1 1 280px;
+    max-width: 380px;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 0.875rem;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    pointer-events: none;
+    transition: color 0.2s ease, transform 0.2s ease;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 0.625rem 0.875rem 0.625rem 2.5rem;
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--text-main);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.search-box input:hover {
+    border-color: var(--border-hover);
+}
+
+.search-box input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-glow);
+}
+
+.search-box:focus-within i {
+    color: var(--primary);
+    transform: scale(1.05);
+}
+
+.search-box input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.8;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 0.625rem;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   9. Stats Overview & Helpers
+   ========================================================================== */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.stats-card {
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.stats-label {
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.stats-value {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+/* Icon Helper Classes */
+.icon-blue { color: #2563eb !important; }
+.icon-green { color: #059669 !important; }
+.icon-amber { color: #d97706 !important; }
+
+.custom-tree-pin {
+    background: transparent;
+    border: none;
+}
+
+/* ==========================================================================
+   10. App Footer
+   ========================================================================== */
 .app-footer {
     background: #ffffff;
     border-top: 1px solid var(--border-color);
@@ -545,42 +845,4 @@ tbody tr:hover {
     display: flex;
     gap: 20px;
     list-style: none;
-}
-
-/* Stats Overview Section */
-.stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.stats-card {
-    padding: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.stats-label {
-    font-size: 0.875rem;
-    color: #64748b;
-}
-
-.stats-value {
-    margin: 0;
-    font-size: 1.5rem;
-}
-
-/* Icon Colors */
-.icon-blue {
-    color: #2563eb;
-}
-
-.icon-green {
-    color: #059669;
-}
-
-.icon-amber {
-    color: #d97706;
 }

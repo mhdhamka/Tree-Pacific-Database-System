@@ -1,431 +1,245 @@
-<!---TMF2034: Database Concept & Design (G07)--->
-<!---1. Mohammad Hamka Izzuddin Bin Mohamad Yahya (73571)--->
-<!---2. Harith Zakwan Bin Zakaria (73484)------------------->
-<!---3. Iman Tarmizi Rosalina (73496)----------------------->
-<!---4. Faizatul Fitri Bin Boestamam (75351)---------------->
+<?php 
+include(__DIR__ . '/../../config/dbConnect.php');
 
-<?php
-	// including the database connection file
-	include(__DIR__ . '/../dbConnect.php');
-	$count = 0;
+$error = '';
+$treeID = $_GET['updateID'] ?? null;
 
-	if(isset($_POST['updateTree']))
-	{	
-		$updateID = $_GET['updateID'];
-		$staffID = $_POST['staffID'];
-		$treeheight = $_POST['treeheight'];
-		$treediameter = $_POST['treediameter'];
-		$treestatus = $_POST['treestatus'];
-		$treeimage = $_POST['treeimage'];
-		$updatedate = $_POST['updatedate'];
-		
-		global $conn;
-		$sql = "SELECT * FROM treeupdate";
-		$result = mysqli_query($conn, $sql);
+// Redirect if no Tree ID is provided
+if (!$treeID) {
+    header("Location: ../views/staff/inventory.php");
+    exit();
+}
 
-		if ($result -> num_rows > 0)
-		{
-			while ($row = $result -> fetch_assoc())
-			{
-				$count = $row['UpdateID'];
-				$count++;
-			}
-		}
-		
-		$sql = "INSERT INTO treeupdate(UpdateID, TreeID, StaffID, TreeHeight, TreeDiameter, TreeStatus, TreeImage, UpdateDate)
-				VALUES('$count', '$updateID', '$staffID', '$treeheight', '$treediameter', '$treestatus', '$treeimage', '$updatedate')";
-		echo "oi";
-		if (mysqli_query($conn, $sql))
-		{   
-			$success = false;
-			header("Location:viewTree.php");
-		}
-		else
-		{
-			echo "Error: " . $sql . "<br>" . mysqli_error($conn);
-		}
-	}
-	
+// -------------------------------------------------------------
+// FETCH DATA: Get Tree details & Latest Tree Update Record
+// -------------------------------------------------------------
+$treeData = null;
+$latestUpdate = null;
+
+// 1. Fetch base tree details (including timber_grade)
+$fetchTreeSql = "SELECT t.TreeID, t.SpeciesName, t.BlockID, t.timber_grade 
+                FROM tree t 
+                WHERE t.TreeID = ?";
+$stmtFetchTree = mysqli_prepare($conn, $fetchTreeSql);
+if ($stmtFetchTree) {
+    mysqli_stmt_bind_param($stmtFetchTree, "i", $treeID);
+    mysqli_stmt_execute($stmtFetchTree);
+    $res = mysqli_stmt_get_result($stmtFetchTree);
+    if ($res && $row = mysqli_fetch_assoc($res)) {
+        $treeData = $row;
+    }
+    mysqli_stmt_close($stmtFetchTree);
+}
+
+// Redirect if tree does not exist
+if (!$treeData) {
+    header("Location: ../views/staff/inventory.php");
+    exit();
+}
+
+// 2. Fetch the latest inspection log using StaffID
+$fetchLogSql = "SELECT StaffID, TreeHeight, TreeDiameter, TreeStatus, TreeImage, UpdateDate 
+                FROM treeupdate 
+                WHERE TreeID = ? 
+                ORDER BY UpdateDate DESC, UpdateID DESC 
+                LIMIT 1";
+
+$stmtFetchLog = mysqli_prepare($conn, $fetchLogSql);
+if ($stmtFetchLog) {
+    mysqli_stmt_bind_param($stmtFetchLog, "i", $treeID);
+    mysqli_stmt_execute($stmtFetchLog);
+    $logRes = mysqli_stmt_get_result($stmtFetchLog);
+    if ($logRes && $logRow = mysqli_fetch_assoc($logRes)) {
+        $latestUpdate = $logRow;
+    }
+    mysqli_stmt_close($stmtFetchLog);
+}
+
+// -------------------------------------------------------------
+// PRE-FILL FORM VARIABLES
+// -------------------------------------------------------------
+
+// From 'tree' table
+$timber_grade = $treeData['timber_grade'] ?? '';
+
+// From 'treeupdate' table (fallback to empty defaults if no previous log exists)
+$staffID      = $latestUpdate['StaffID'] ?? '';
+$treeheight   = $latestUpdate['TreeHeight'] ?? '';
+$treediameter = $latestUpdate['TreeDiameter'] ?? '';
+$treestatus   = $latestUpdate['TreeStatus'] ?? '1';
+$treeimage    = $latestUpdate['TreeImage'] ?? '';
+
+// Format date strictly as 'Y-m-d' for the <input type="date"> element
+if (!empty($latestUpdate['UpdateDate'])) {
+    $updatedate = date('Y-m-d', strtotime($latestUpdate['UpdateDate']));
+} else {
+    $updatedate = date('Y-m-d');
+}
+
+// Fetch staff list for dropdown
+$staffList = [];
+$staffQuery = "SELECT UserID FROM staff ORDER BY UserID ASC";
+$staffResult = mysqli_query($conn, $staffQuery);
+if ($staffResult) {
+    while ($row = mysqli_fetch_assoc($staffResult)) {
+        $staffList[] = $row;
+    }
+}
 ?>
 
 <!DOCTYPE HTML>
-<html lang = "en">
-
+<html lang="en">
 <head>
-	<meta charset = "UTF-8">
-	<title>TreePacific | Home</title>
-
-	<style>
-		*{
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-			font-family: Helvetica;
-		}
-		
-		body {
-			overflow-x: hidden;
-		}
-		
-		.container {
-			position: relative;
-			width: 100%;
-		}
-		
-		.sidebar {
-			position: fixed;
-			width: 325px;
-			height: 100%;
-			background: #4c5c5a;
-			transition: 0.5s;
-			overflow: hidden;
-		}
-		
-		.sidebar a.active {
-			background:  #d6dbde;
-			color: #4c5c5a;
-		}
-		
-		.sidebar ul li a.active .icon .fa {
-			color: #4c5c5a;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a.active .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #4c5c5a;
-			white-space: nowrap;
-		}
-		
-		
-		.sidebar ul {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-		}
-		
-		.sidebar ul li {
-			position: relative;
-			width: 100%;
-			list-style: none;
-		}
-
-		
-		.sidebar ul li:hover {
-			background: #859998;
-		}
-		
-		.sidebar ul li:nth-child(1) {
-			margin-bottom: 10px;
-		}
-		
-		.sidebar ul li:nth-child(1):hover {
-			background: transparent;
-		}
-		
-		.sidebar ul li a {
-			position: relative;
-			display: block;
-			width: 100%;
-			display: flex;
-			text-decoration: none;
-		}
-		
-		.sidebar ul li a .icon { 
-			position: relative;
-			display: block;
-			min-width: 60px;
-			height: 60px;
-			line-height: 60px;
-			text-align: center;
-		}
-		
-		.sidebar ul li a .icon .fa {
-			color: #d6dbde;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #d6dbde;
-			white-space: nowrap;
-		}
-		
-		.main {
-			position: absolute;
-			width: calc(100% - 325px);
-			left: 325px;
-			min-height: 100vh;
-			background: lightgrey;
-		}
-		
-		.main .topbar {
-			width: 100%;
-			background: white;
-			height: 60px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 20px;
-		}
-		
-		.main .topbar i {
-			font-size: 25px;
-		}
-		
-		.main .topbar small {
-			visibility: visible;
-			padding: 10px;
-		}
-		
-		.main .form-control {
-			padding: 20px;
-		}
-		
-		.main ul {
-			list-style-type: none;
-			overflow: hidden;
-			padding: 20px 20px 0 20px;
-		}
-		
-		.main ul li {
-			float: left;
-			padding-right: 10px;
-			color: #4c5c5a;
-		}
-		
-		.main ul li a {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.main ul li p {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.form-control {
-			padding-bottom: 20px;
-		}
-		
-		.form-control i {
-			color: #4c5c5a;
-		}
-		
-		.form-control label {
-			display: inline-block;
-			margin-bottom: 5px;
-		}
-		
-		.form-control input[type=text], input[type=email], input[type=password]{
-			border: 2px solid darkgrey;
-			border-radius: 5px;
-			display: block;
-			padding: 10px;
-			width: 50%;
-		}
-		
-		.form-control small{
-			visibility: hidden;
-		}
-		
-		.form-control input[type=submit] {
-			background-color: #d6dbde;
-			padding: 5px;
-			border-radius: 4px;
-			border: 2px solid #859998;
-			color: #4c5c5a;
-			width: 10%;
-		}
-		
-		.form-control.error small{
-			visibility: visible;
-			color: #4c5c5a;
-		}
-		
-		.form-control.success small{
-			visibility: hidden;
-		}
-		
-		.form-control.error input{
-			border-color: #4c5c5a;
-		}
-		
-		.form-control.success input{
-			border-color: #4c5c5a;
-		}
-			
-	</style>
-	
-	<script src="https://use.fontawesome.com/59805f286a.js"></script>
-
-	<link rel="icon" type="image/x-icon" href="tree.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PacificTree | Update Tree Status</title>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../../../assets/images/TREE.PNG">
+    <link rel="stylesheet" href="../../../assets/css/staff.css">
 </head>
 
 <body>
-	<div class = "container">
-		<div class = "sidebar" id = "sidebar">
-			<ul>
-				<li>
-					<a>
-						<span class = "icon"><i class = "fa fa-user-circle"></i></span>
-						<span class = "icon" style = "color: #d6dbde">
-							<?php
-								global $conn;
-								$sql = "SELECT Username FROM user WHERE logStatus = 1 && UserType = 'S';";
-								$result = mysqli_query($conn, $sql);
-								
-								if ($result -> num_rows > 0)
-								{
-									while ($row = $result -> fetch_assoc())
-									{
-										echo $row["Username"];
-									}
-								}
-							?>							
-						</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewUser.php">
-						<span class = "icon"><i class = "fa fa-users"></i></span>
-						<span class = "title">Users</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewCompany.php">
-						<span class = "icon"><i class = "fa fa-building"></i></span>
-						<span class = "title">Companies</span>
-					</a>
-				</li>
-				<li>
-					<a class = "active" href = "viewTree.php">
-						<span class = "icon"><i class = "fa fa-leaf"></i></span>
-						<span class = "title">Trees</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewBlock.php">
-						<span class = "icon"><i class = "fa fa-tree"></i></span>
-						<span class = "title">Blocks</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewOrchard.php">
-						<span class = "icon"><i class = "fa fa-map"></i></span>
-						<span class = "title">Orchards</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewSale.php">
-						<span class = "icon"><i class = "fa fa-line-chart"></i></span>
-						<span class = "title">Sales</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewReport.php">
-						<span class = "icon"><i class = "fa fa-table"></i></span>
-						<span class = "title">Report</span>
-					</a>
-				</li>
-				<li>
-					<a href = "logoutStaff.php">
-						<span class = "icon"><i class = "fa fa-sign-out"></i></span>
-						<span class = "title">Log Out</span>
-					</a>
-				</li>
-			</ul>
-		</div>
-		
-		<div class = "main">
-			<div class = "topbar">
-				<div class = "admin">
-					<h1 style = "color: #4c5c5a;">
-						Tree Profiling Management System
-					</h1>
-				</div>
-			</div>
-			
-			<ul>
-				<li>
-					<a href = "viewTree.php">Trees</a>
-				</li>
-				<li>
-					<p> >> </p>
-				</li>
-				<li>
-					<a style = "font-weight: bold;">Update Tree</a>
-				</li>
-			</ul>
-			
-			<form method = "POST">
-				<div class = "form-control">
-					<i class="fa fa-leaf"></i>
-					<label>Tree ID: </label>
-					<label><?php $updateID = $_GET['updateID'];
-												global $conn;
-												$sql = "SELECT TreeID FROM tree WHERE TreeID = $updateID";
-												$result = mysqli_query($conn, $sql);
-												
-												while ($row = $result -> fetch_assoc())
-												{
-													echo $row["TreeID"];
-												}
-										  ?></label>
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-user-circle"></i>
-					<label>Managing Staff ID: </label>
-					<input type = "text" name = "staffID" id = "staffID">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-tag"></i>
-					<label>Tree Height: </label>
-					<input type = "text" name = "treeheight" id = "treeheight">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-tag"></i>
-					<label>Tree Diameter: </label>
-					<input type = "text" name = "treediameter" id = "treediameter">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-dollar"></i>
-					<label>Tree Status: </label>
-					<input type = "text" name = "treestatus" id = "treestatus">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-calendar"></i>
-					<label>Update Date: </label>
-					<input type = "date" name = "updatedate" id = "updatedate">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-file-image-o"></i>
-					<label>Tree Image: </label>
-					<input type = "file" name = "treeimage" id = "treeimage">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<input type = "submit" name = "updateTree" value = "Update"></input>
-				</div>
-			</form>
-		</div>
-	</div>
+    <div class="app-wrapper">
+        
+        <!-- Sidebar -->
+        <?php include(__DIR__ . '/../../includes/sidebar.php'); ?>
+
+        <!-- Main Content Wrapper -->
+        <main class="main-content">
+            
+            <header class="topbar">
+                <h1 class="topbar-title">Tree Block Inventory & Spatial Mapping</h1>
+            </header>
+
+            <div class="content-body">
+                
+                <!-- Breadcrumbs -->
+                <nav>
+                    <ul class="breadcrumb">
+                        <li><a href="../../views/staff/inventory.php">Inventory</a></li>
+                        <li class="separator"><i class="fa-solid fa-angle-right"></i></li>
+                        <li class="active">Update Tree #<?php echo htmlspecialchars($treeID); ?> (<?php echo htmlspecialchars($treeData['SpeciesName']); ?>)</li>
+                    </ul>
+                </nav>
+
+                <!-- Form Card Component -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">
+                            <i class="fa-solid fa-pen-to-square"></i> Record Tree Update Details — Tree #<?php echo htmlspecialchars($treeID); ?>
+                        </h2>
+                    </div>
+
+                    <div class="card-body">
+                        <?php if (!empty($error)): ?>
+                            <div class="alert alert-danger">
+                                <i class="fa-solid fa-circle-exclamation"></i> <?php echo htmlspecialchars($error); ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form method="POST" action="../../controllers/staff/inventoryController.php?action=updateTree">
+                            <!-- Hidden Tree ID Input -->
+                            <input type="hidden" name="treeID" value="<?php echo htmlspecialchars($treeID); ?>">
+
+                            <!-- Staff ID / User ID Select Dropdown -->
+                            <div class="form-group">
+                                <label for="staffID">Staff Member</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-id-badge"></i>
+                                    <select class="form-control-input" name="staffID" id="staffID" required>
+                                        <option value="" disabled <?php echo empty($staffID) ? 'selected' : ''; ?>>Select Staff ID</option>
+                                        <?php foreach ($staffList as $staff): ?>
+                                            <option value="<?php echo htmlspecialchars($staff['UserID']); ?>" 
+                                                <?php echo ($staffID == $staff['UserID']) ? 'selected' : ''; ?>>
+                                                Staff ID #<?php echo htmlspecialchars($staff['UserID']); ?>
+                                            </option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Timber Grade Dropdown -->
+                            <div class="form-group">
+                                <label for="timber_grade">Timber Grade</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-award"></i>
+                                    <select class="form-control-input" name="timber_grade" id="timber_grade" required>
+                                        <option value="" disabled <?php echo empty($timber_grade) ? 'selected' : ''; ?>>Select Grade</option>
+                                        <option value="A" <?php echo ($timber_grade == 'A') ? 'selected' : ''; ?>>Grade A (Premium)</option>
+                                        <option value="B" <?php echo ($timber_grade == 'B') ? 'selected' : ''; ?>>Grade B (Standard)</option>
+                                        <option value="C" <?php echo ($timber_grade == 'C') ? 'selected' : ''; ?>>Grade C (Utility)</option>
+                                        <option value="D" <?php echo ($timber_grade == 'D') ? 'selected' : ''; ?>>Grade D (Low)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Tree Height -->
+                            <div class="form-group">
+                                <label for="treeheight">Tree Height (m)</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-ruler-vertical"></i>
+                                    <input type="number" step="0.01" class="form-control-input" name="treeheight" id="treeheight" placeholder="e.g. 12.5" value="<?php echo htmlspecialchars($treeheight); ?>" required>
+                                </div>
+                            </div>
+
+                            <!-- Tree Diameter -->
+                            <div class="form-group">
+                                <label for="treediameter">Tree Diameter (cm)</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-ruler-horizontal"></i>
+                                    <input type="number" step="0.01" class="form-control-input" name="treediameter" id="treediameter" placeholder="e.g. 45.0" value="<?php echo htmlspecialchars($treediameter); ?>" required>
+                                </div>
+                            </div>
+
+                            <!-- Tree Status Select Dropdown (1 = Healthy, 0 = Requires Attention) -->
+                            <div class="form-group">
+                                <label for="treestatus">Tree Status</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-heart-pulse"></i>
+                                    <select class="form-control-input" name="treestatus" id="treestatus" required>
+                                        <option value="1" <?php echo ($treestatus == '1' || $treestatus === 1) ? 'selected' : ''; ?>>1 - Healthy</option>
+                                        <option value="0" <?php echo ($treestatus == '0' || $treestatus === 0) ? 'selected' : ''; ?>>0 - Requires Attention</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Image URL / Path -->
+                            <div class="form-group">
+                                <label for="treeimage">Image URL / File Path</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-image"></i>
+                                    <input type="text" class="form-control-input" name="treeimage" id="treeimage" placeholder="path/to/image.jpg" value="<?php echo htmlspecialchars($treeimage); ?>" required>
+                                </div>
+                            </div>
+
+                            <!-- Update Date -->
+                            <div class="form-group">
+                                <label for="updatedate">Update Date</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-calendar-days"></i>
+                                    <input type="date" class="form-control-input" name="updatedate" id="updatedate" value="<?php echo htmlspecialchars($updatedate); ?>" required>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="submit" name="updateTree" class="btn btn-primary">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Record
+                                </button>
+                                <a href="../../views/staff/inventory.php" class="btn btn-outline-danger">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <?php include(__DIR__ . '/../../includes/footer.php'); ?>
+
+        </main>
+    </div>
 </body>
 </html>

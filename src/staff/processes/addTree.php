@@ -1,397 +1,214 @@
-<!---TMF2034: Database Concept & Design (G07)--->
-<!---1. Mohammad Hamka Izzuddin Bin Mohamad Yahya (73571)--->
-<!---2. Harith Zakwan Bin Zakaria (73484)------------------->
-<!---3. Iman Tarmizi Rosalina (73496)----------------------->
-<!---4. Faizatul Fitri Bin Boestamam (75351)---------------->
-
-<?php include(__DIR__ . '/../dbConnect.php');
-	$count = 0;
-	
-	if(isset($_POST['addTree'])) {
-		$speciesname = $_POST['speciesname'];
-		$latitude = $_POST['latitude'];
-		$longitude = $_POST['longitude'];
-		$blockID = $_POST['blockID'];
-
-		global $conn;
-		$sql = "SELECT * FROM tree";
-		$result = mysqli_query($conn, $sql);
-
-		if ($result -> num_rows > 0)
-		{
-			while ($row = $result -> fetch_assoc())
-			{
-				$count = $row['TreeID'];
-				$count++;
-			}
-		}
-		
-		$sql = "INSERT INTO tree(TreeID, SpeciesName, Lattitude, Longitude, BlockID)
-				VALUES('$count', '$speciesname', '$latitude', '$longitude', '$blockID')";
-
-		if (mysqli_query($conn, $sql))
-		{   
-			$success = false;	
-			header("Location:viewTree.php");
-		}
-		else
-		{
-			echo "Error: " . $sql . "<br>" . mysqli_error($conn);
-		}
-	}
+<?php 
+include(__DIR__ . '../../../config/dbConnect.php');
 ?>
 
+
 <!DOCTYPE HTML>
-<html lang = "en">
+<html lang="en">
 <head>
-	<meta charset = "UTF-8">
-	<title>TreePacific | Trees</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreePacific | Add Tree</title>
 
-	<style>
-		*{
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-			font-family: Helvetica;
-		}
-		
-		body {
-			overflow-x: hidden;
-		}
-		
-		.container {
-			position: relative;
-			width: 100%;
-		}
-		
-		.sidebar {
-			position: fixed;
-			width: 325px;
-			height: 100%;
-			background: #4c5c5a;
-			transition: 0.5s;
-			overflow: hidden;
-		}
-		
-		.sidebar a.active {
-			background:  #d6dbde;
-			color: #4c5c5a;
-		}
-		
-		.sidebar ul li a.active .icon .fa {
-			color: #4c5c5a;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a.active .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #4c5c5a;
-			white-space: nowrap;
-		}
-		
-		
-		.sidebar ul {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-		}
-		
-		.sidebar ul li {
-			position: relative;
-			width: 100%;
-			list-style: none;
-		}
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="../../../assets/images/TREE.PNG">
 
-		
-		.sidebar ul li:hover {
-			background: #859998;
-		}
-		
-		.sidebar ul li:nth-child(1) {
-			margin-bottom: 10px;
-		}
-		
-		.sidebar ul li:nth-child(1):hover {
-			background: transparent;
-		}
-		
-		.sidebar ul li a {
-			position: relative;
-			display: block;
-			width: 100%;
-			display: flex;
-			text-decoration: none;
-		}
-		
-		.sidebar ul li a .icon { 
-			position: relative;
-			display: block;
-			min-width: 60px;
-			height: 60px;
-			line-height: 60px;
-			text-align: center;
-		}
-		
-		.sidebar ul li a .icon .fa {
-			color: #d6dbde;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #d6dbde;
-			white-space: nowrap;
-		}
-		
-		.main {
-			position: absolute;
-			width: calc(100% - 325px);
-			left: 325px;
-			min-height: 100vh;
-			background: lightgrey;
-		}
-		
-		.main .topbar {
-			width: 100%;
-			background: white;
-			height: 60px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 20px;
-		}
-		
-		.main .topbar i {
-			font-size: 25px;
-		}
-		
-		.main .topbar small {
-			visibility: visible;
-			padding: 10px;
-		}
-		
-		.main .form-control {
-			padding: 20px;
-		}
-		
-		.main ul {
-			list-style-type: none;
-			overflow: hidden;
-			padding: 20px 20px 0 20px;
-		}
-		
-		.main ul li {
-			float: left;
-			padding-right: 10px;
-			color: #4c5c5a;
-		}
-		
-		.main ul li a {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.main ul li p {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.form-control {
-			padding-bottom: 20px;
-		}
-		
-		.form-control i {
-			color: #4c5c5a;
-		}
-		
-		.form-control label {
-			display: inline-block;
-			margin-bottom: 5px;
-		}
-		
-		.form-control input[type=text], input[type=email], input[type=password]{
-			border: 2px solid darkgrey;
-			border-radius: 5px;
-			display: block;
-			padding: 10px;
-			width: 50%;
-		}
-		
-		.form-control small{
-			visibility: hidden;
-		}
-		
-		.form-control input[type=submit] {
-			background-color: #d6dbde;
-			padding: 5px;
-			border-radius: 4px;
-			border: 2px solid #859998;
-			color: #4c5c5a;
-			width: 10%;
-		}
-		
-		.form-control.error small{
-			visibility: visible;
-			color: #4c5c5a;
-		}
-		
-		.form-control.success small{
-			visibility: hidden;
-		}
-		
-		.form-control.error input{
-			border-color: #4c5c5a;
-		}
-		
-		.form-control.success input{
-			border-color: #4c5c5a;
-		}
-			
-	</style>
-	
-	<script src="https://use.fontawesome.com/59805f286a.js"></script>
-
-	<link rel="icon" type="image/x-icon" href="tree.png">
+    <link rel="stylesheet" href="../../../assets/css/staff.css">
 </head>
 
 <body>
-	<div class = "container">
-		<div class = "sidebar" id = "sidebar">
-			<ul>
-				<li>
-					<a>
-						<span class = "icon"><i class = "fa fa-user-circle"></i></span>
-						<span class = "icon" style = "color: #d6dbde">
-							<?php
-								global $conn;
-								$sql = "SELECT Username FROM user WHERE logStatus = 1 && UserType = 'S';";
-								$result = mysqli_query($conn, $sql);
-								
-								if ($result -> num_rows > 0)
-								{
-									while ($row = $result -> fetch_assoc())
-									{
-										echo $row["Username"];
-									}
-								}
-							?>							
-						</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewUser.php">
-						<span class = "icon"><i class = "fa fa-users"></i></span>
-						<span class = "title">Users</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewCompany.php">
-						<span class = "icon"><i class = "fa fa-building"></i></span>
-						<span class = "title">Companies</span>
-					</a>
-				</li>
-				<li>
-					<a class = "active" href = "viewTree.php">
-						<span class = "icon"><i class = "fa fa-leaf"></i></span>
-						<span class = "title">Trees</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewBlock.php">
-						<span class = "icon"><i class = "fa fa-tree"></i></span>
-						<span class = "title">Blocks</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewOrchard.php">
-						<span class = "icon"><i class = "fa fa-map"></i></span>
-						<span class = "title">Orchards</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewSale.php">
-						<span class = "icon"><i class = "fa fa-line-chart"></i></span>
-						<span class = "title">Sales</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewReport.php">
-						<span class = "icon"><i class = "fa fa-table"></i></span>
-						<span class = "title">Report</span>
-					</a>
-				</li>
-				<li>
-					<a href = "logoutStaff.php">
-						<span class = "icon"><i class = "fa fa-sign-out"></i></span>
-						<span class = "title">Log Out</span>
-					</a>
-				</li>
-			</ul>
-		</div>
-		
-		<div class = "main">
-			<div class = "topbar">
-				<div class = "admin">
-					<h1 style = "color: #4c5c5a;">
-						Tree Profiling Management System
-					</h1>
-				</div>
-			</div>
-			
-			<ul>
-				<li>
-					<a href = "viewTree.php">Trees</a>
-				</li>
-				<li>
-					<p> >> </p>
-				</li>
-				<li>
-					<a href = "addTree.php" style = "font-weight: bold;">Add Tree</a>
-				</li>
-			</ul>
-			
-			
-			<form method = "POST">
-				<div class = "form-control">
-					<i class="fa fa-leaf"></i>
-					<label>Species Name: </label>
-					<input type = "text" name = "speciesname" id = "speciesname" required>
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-map-pin"></i>
-					<label>Latitude: </label>
-					<input type = "text" name = "latitude" id = "latitude" required>
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-map-pin"></i>
-					<label>Longitude: </label>
-					<input type = "text" name = "longitude" id = "longitude" required>
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-tree"></i>
-					<label>Block ID: </label>
-					<input type = "text" name = "blockID" id = "blockID" required>
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<input type = "submit" name = "addTree" value = "Submit"></input>
-				</div>
-			</form>
-		</div>
-	</div>
+    <div class="app-wrapper">
+        
+        <!-- Sidebar -->
+        <?php include(__DIR__ . '../../../includes/sidebar.php'); ?>
+
+        <!-- Main Content Wrapper -->
+        <main class="main-content">
+            
+            <header class="topbar">
+                <h1 class="topbar-title">Tree Block inventory & Spatial Mapping</h1>
+            </header>
+
+            <div class="content-body">
+                
+                <!-- Breadcrumbs -->
+                <nav>
+                    <ul class="breadcrumb">
+                        <li><a href="../../views/staff/inventory.php">Inventory</a></li>
+                        <li class="separator"><i class="fa-solid fa-angle-right"></i></li>
+                        <li class="active">Add Tree</li>
+                    </ul>
+                </nav>
+
+                <!-- Form Card Component -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Register New Tree</h2>
+                    </div>
+                    
+                    <div class="card-body">
+                        <?php if (!empty($error)): ?>
+                            <div class="alert alert-danger">
+                                <i class="fa-solid fa-circle-exclamation"></i> <?php echo htmlspecialchars($error); ?>
+                            </div>
+                        <?php endif; ?>
+
+                        <form method="POST" action="../../controllers/staff/inventoryController.php?action=addTree">
+                            
+                            <!-- Species Name -->
+                            <div class="form-group">
+                                <label for="speciesname">Species Name</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-leaf"></i>
+                                    <input type="text" class="form-control-input" name="speciesname" id="speciesname" placeholder="e.g. Durian Musang King" required>
+                                </div>
+                            </div>
+
+                            <!-- Timber Grade Dropdown -->
+                            <div class="form-group">
+                                <label for="timber_grade">Timber Grade</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-award"></i>
+                                    <select class="form-control-input" name="timber_grade" id="timber_grade" required>
+                                        <option value="" disabled selected>Select Grade</option>
+                                        <option value="A">Grade A (Premium)</option>
+                                        <option value="B">Grade B (Standard)</option>
+                                        <option value="C">Grade C (Utility)</option>
+                                        <option value="D">Grade D (Low)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Initial Tree Height -->
+                            <div class="form-group">
+                                <label for="treeheight">Tree Height (m)</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-ruler-vertical"></i>
+                                    <input type="number" step="0.01" class="form-control-input" name="treeheight" id="treeheight" placeholder="e.g. 12.50" required>
+                                </div>
+                            </div>
+
+                            <!-- Initial Tree Diameter -->
+                            <div class="form-group">
+                                <label for="treediameter">Tree Diameter (cm)</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-ruler-horizontal"></i>
+                                    <input type="number" step="0.01" class="form-control-input" name="treediameter" id="treediameter" placeholder="e.g. 45.00" required>
+                                </div>
+                            </div>
+
+                            <!-- Leaflet Map Selector -->
+                            <div class="form-group">
+                                <label>Pick Location on Map</label>
+                                <div id="treeMap" style="height: 300px; width: 100%; border-radius: 8px; margin-bottom: 12px; border: 1px solid #ccc;"></div>
+                                <small style="color: #666;">Click anywhere on the map or drag the marker to automatically capture coordinates.</small>
+                            </div>
+
+                            <!-- Latitude -->
+                            <div class="form-group">
+                                <label for="latitude">Latitude</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    <input type="text" class="form-control-input" name="latitude" id="latitude" placeholder="e.g. 1.5533" readonly required>
+                                </div>
+                            </div>
+
+                            <!-- Longitude -->
+                            <div class="form-group">
+                                <label for="longitude">Longitude</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-location-dot"></i>
+                                    <input type="text" class="form-control-input" name="longitude" id="longitude" placeholder="e.g. 110.3593" readonly required>
+                                </div>
+                            </div>
+
+                            <!-- Block ID (Foreign Key Dropdown) -->
+                            <div class="form-group">
+                                <label for="blockID">Block ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fa-solid fa-cubes"></i>
+                                    <select class="form-control-input" name="blockID" id="blockID" required>
+                                        <option value="">Select Block</option>
+                                        <?php
+                                        // Query available blocks from the block table
+                                        $blockQuery = "SELECT BlockID, OrchardID FROM block";
+                                        $blockResult = mysqli_query($conn, $blockQuery);
+                                        if ($blockResult && mysqli_num_rows($blockResult) > 0) {
+                                            while ($block = mysqli_fetch_assoc($blockResult)) {
+                                                echo '<option value="' . htmlspecialchars($block['BlockID']) . '">Block #' . htmlspecialchars($block['BlockID']) . ' (Orchard: ' . htmlspecialchars($block['OrchardID']) . ')</option>';
+                                            }
+                                        }
+                                        ?>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="submit" name="addTree" class="btn btn-primary">
+                                    <i class="fa-solid fa-plus"></i> Add Tree
+                                </button>
+                                <a href="../../views/staff/inventory.php" class="btn btn-outline-danger">Cancel</a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <?php include(__DIR__ . '../../../includes/footer.php'); ?>
+
+        </main>
+    </div>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Default coordinates (e.g., Sarawak center / Kuching: 1.5533, 110.3593)
+            const defaultLat = 1.5533;
+            const defaultLng = 110.3593;
+
+            // 1. Initialize Map
+            const map = L.map('treeMap').setView([defaultLat, defaultLng], 13);
+
+            // 2. Add OpenStreetMap Tile Layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '© OpenStreetMap contributors'
+            }).addTo(map);
+
+            // 3. Place a Draggable Marker
+            let marker = L.marker([defaultLat, defaultLng], { draggable: true }).addTo(map);
+
+            // Helper to update field values
+            function updateCoords(lat, lng) {
+                document.getElementById('latitude').value = lat.toFixed(6);
+                document.getElementById('longitude').value = lng.toFixed(6);
+            }
+
+            // Set initial values on load
+            updateCoords(defaultLat, defaultLng);
+
+            // Event 1: Dragging Marker
+            marker.on('dragend', function (e) {
+                const position = marker.getLatLng();
+                updateCoords(position.lat, position.lng);
+            });
+
+            // Event 2: Clicking Map
+            map.on('click', function (e) {
+                const lat = e.latlng.lat;
+                const lng = e.latlng.lng;
+                marker.setLatLng([lat, lng]);
+                updateCoords(lat, lng);
+            });
+
+            // If modal triggers the map view, trigger resize to prevent broken rendering
+            setTimeout(() => { map.invalidateSize(); }, 400);
+        });
+    </script>
 </body>
 </html>

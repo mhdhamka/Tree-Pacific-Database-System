@@ -2,43 +2,6 @@
 include(__DIR__ . '../../../config/dbConnect.php');
 ?>
 
-<?php
-$count = 0;
-
-if(isset($_POST['addUser'])) {
-    $realname = $_POST['realname'];
-    $username = $_POST['username'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $usertype = $_POST['usertype'];
-
-    global $conn;
-    $sql = "SELECT * FROM user";
-    $result = mysqli_query($conn, $sql);
-
-    if ($result && $result->num_rows > 0)
-    {
-        while ($row = $result->fetch_assoc())
-        {
-            $count = $row['UserID'];
-            $count++;
-        }
-    }
-    
-    $sql = "INSERT INTO user(UserID, Username, Email, PasswordHash, RealName, UserType)
-            VALUES('$count', '$username', '$email', '$password', '$realname', '$usertype')";
-            
-    if (mysqli_query($conn, $sql))
-    {   
-        $success = true;
-    }
-    else
-    {
-        $error_message = mysqli_error($conn);
-    }
-}
-?>
-
 <!DOCTYPE HTML>
 <html lang="en">
 <head>
@@ -59,7 +22,7 @@ if(isset($_POST['addUser'])) {
     <div class="app-wrapper">
 
         <!-- Sidebar -->
-        <?php include(__DIR__ . '../../includes/sidebar.php'); ?>
+        <?php include(__DIR__ . '../../../includes/sidebar.php'); ?>
 
         <!-- Main Content Area -->
         <main class="main-content">
@@ -87,7 +50,7 @@ if(isset($_POST['addUser'])) {
                             <div class="alert alert-danger">Error: <?php echo htmlspecialchars($error_message); ?></div>
                         <?php endif; ?>
 
-                        <form method="POST" action="">
+                        <form method="POST" action="../../../controllers/staff/userController.php?action=add">
                             <div class="form-group">
                                 <label for="realname">Real Name</label>
                                 <div class="input-wrapper">
@@ -143,7 +106,7 @@ if(isset($_POST['addUser'])) {
             </div>
 
             <!-- Footer -->
-            <?php include(__DIR__ . '../../includes/footer.php'); ?>
+            <?php include(__DIR__ . '../../../includes/footer.php'); ?>
 
         </main>
     </div>

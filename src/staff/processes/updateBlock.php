@@ -1,405 +1,160 @@
-<!---TMF2034: Database Concept & Design (G07)--->
-<!---1. Mohammad Hamka Izzuddin Bin Mohamad Yahya (73571)--->
-<!---2. Harith Zakwan Bin Zakaria (73484)------------------->
-<!---3. Iman Tarmizi Rosalina (73496)----------------------->
-<!---4. Faizatul Fitri Bin Boestamam (75351)---------------->
+<?php 
+include(__DIR__ . '/../../config/dbConnect.php');
 
-<?php
-	// including the database connection file
-	include(__DIR__ . '/../dbConnect.php');
+$error = '';
+$updateID = isset($_GET['updateID']) ? intval($_GET['updateID']) : 0;
 
-	if(isset($_POST['updateBlock']))
-	{	
-		$baseprice = ($_POST['baseprice']);
-		$orchardID = ($_POST['orchardID']);
-		
-		//updating the table
-		$updateID = $_GET['updateID'];
-		global $conn;
-		$sql = "UPDATE block SET BasePrice = '$baseprice', OrchardID = '$orchardID' WHERE BlockID = $updateID";
-		$result = mysqli_query($conn, $sql);
-		header("Location:viewBlock.php");
-	}
-	
+if ($updateID <= 0) {
+    header("Location: viewBlock.php");
+    exit();
+}
+
+// Handle Form Submission
+if (isset($_POST['updateBlock'])) {   
+    $baseprice = trim($_POST['baseprice']);
+    $orchardID = trim($_POST['orchardID']);
+
+    if (!empty($baseprice) && !empty($orchardID)) {
+        // Prepared Statement for Update
+        $stmt = mysqli_prepare($conn, "UPDATE block SET BasePrice = ?, OrchardID = ? WHERE BlockID = ?");
+        mysqli_stmt_bind_param($stmt, "dii", $baseprice, $orchardID, $updateID);
+
+        if (mysqli_stmt_execute($stmt)) {
+            mysqli_stmt_close($stmt);
+            header("Location: viewBlock.php");
+            exit();
+        } else {
+            $error = "Update Failed: " . mysqli_error($conn);
+        }
+    } else {
+        $error = "All fields are required.";
+    }
+}
+
+// Fetch Existing Record Data safely
+$stmt = mysqli_prepare($conn, "SELECT BlockID, BasePrice, OrchardID FROM block WHERE BlockID = ?");
+mysqli_stmt_bind_param($stmt, "i", $updateID);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+
+if (mysqli_num_rows($result) === 0) {
+    header("Location: viewBlock.php");
+    exit();
+}
+
+$block = mysqli_fetch_assoc($result);
+mysqli_stmt_close($stmt);
+
+// Fetch Active User Name safely
+$username = "Staff User";
+$userQuery = mysqli_query($conn, "SELECT Username FROM user WHERE logStatus = 1 AND UserType = 'S' LIMIT 1");
+if ($userQuery && mysqli_num_rows($userQuery) > 0) {
+    $userData = mysqli_fetch_assoc($userQuery);
+    $username = $userData['Username'];
+}
 ?>
-
 <!DOCTYPE HTML>
-<html lang = "en">
+<html lang="en">
 <head>
-	<meta charset = "UTF-8">
-	<title>TreePacific | Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreePacific | Update Block</title>
 
-	<style>
-		*{
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-			font-family: Helvetica;
-		}
-		
-		body {
-			overflow-x: hidden;
-		}
-		
-		.container {
-			position: relative;
-			width: 100%;
-		}
-		
-		.sidebar {
-			position: fixed;
-			width: 325px;
-			height: 100%;
-			background: #4c5c5a;
-			transition: 0.5s;
-			overflow: hidden;
-		}
-		
-		.sidebar a.active {
-			background:  #d6dbde;
-			color: #4c5c5a;
-		}
-		
-		.sidebar ul li a.active .icon .fa {
-			color: #4c5c5a;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a.active .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #4c5c5a;
-			white-space: nowrap;
-		}
-		
-		
-		.sidebar ul {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-		}
-		
-		.sidebar ul li {
-			position: relative;
-			width: 100%;
-			list-style: none;
-		}
+    <!-- FontAwesome & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../../../assets/images/TREE.PNG">
 
-		
-		.sidebar ul li:hover {
-			background: #859998;
-		}
-		
-		.sidebar ul li:nth-child(1) {
-			margin-bottom: 10px;
-		}
-		
-		.sidebar ul li:nth-child(1):hover {
-			background: transparent;
-		}
-		
-		.sidebar ul li a {
-			position: relative;
-			display: block;
-			width: 100%;
-			display: flex;
-			text-decoration: none;
-		}
-		
-		.sidebar ul li a .icon { 
-			position: relative;
-			display: block;
-			min-width: 60px;
-			height: 60px;
-			line-height: 60px;
-			text-align: center;
-		}
-		
-		.sidebar ul li a .icon .fa {
-			color: #d6dbde;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #d6dbde;
-			white-space: nowrap;
-		}
-		
-		.main {
-			position: absolute;
-			width: calc(100% - 325px);
-			left: 325px;
-			min-height: 100vh;
-			background: lightgrey;
-		}
-		
-		.main .topbar {
-			width: 100%;
-			background: white;
-			height: 60px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 20px;
-		}
-		
-		.main .topbar i {
-			font-size: 25px;
-		}
-		
-		.main .topbar small {
-			visibility: visible;
-			padding: 10px;
-		}
-		
-		.main .form-control {
-			padding: 20px;
-		}
-		
-		.main ul {
-			list-style-type: none;
-			overflow: hidden;
-			padding: 20px 20px 0 20px;
-		}
-		
-		.main ul li {
-			float: left;
-			padding-right: 10px;
-			color: #4c5c5a;
-		}
-		
-		.main ul li a {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.main ul li p {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.form-control {
-			padding-bottom: 20px;
-		}
-		
-		.form-control i {
-			color: #4c5c5a;
-		}
-		
-		.form-control label {
-			display: inline-block;
-			margin-bottom: 5px;
-		}
-		
-		.form-control input[type=text], input[type=email], input[type=password]{
-			border: 2px solid darkgrey;
-			border-radius: 5px;
-			display: block;
-			padding: 10px;
-			width: 50%;
-		}
-		
-		.form-control small{
-			visibility: hidden;
-		}
-		
-		.form-control input[type=submit] {
-			background-color: #d6dbde;
-			padding: 5px;
-			border-radius: 4px;
-			border: 2px solid #859998;
-			color: #4c5c5a;
-			width: 10%;
-		}
-		
-		.form-control.error small{
-			visibility: visible;
-			color: #4c5c5a;
-		}
-		
-		.form-control.success small{
-			visibility: hidden;
-		}
-		
-		.form-control.error input{
-			border-color: #4c5c5a;
-		}
-		
-		.form-control.success input{
-			border-color: #4c5c5a;
-		}
-			
-	</style>
-	
-	<script src="https://use.fontawesome.com/59805f286a.js"></script>
-
-	<link rel="icon" type="image/x-icon" href="tree.png">
+    <link rel="stylesheet" href="../../../assets/css/staff.css">
 </head>
-
 <body>
-	<div class = "container">
-		<div class = "sidebar" id = "sidebar">
-			<ul>
-				<li>
-					<a>
-						<span class = "icon"><i class = "fa fa-user-circle"></i></span>
-						<span class = "icon" style = "color: #d6dbde">
-							<?php
-								global $conn;
-								$sql = "SELECT Username FROM user WHERE logStatus = 1 && UserType = 'S';";
-								$result = mysqli_query($conn, $sql);
-								
-								if ($result -> num_rows > 0)
-								{
-									while ($row = $result -> fetch_assoc())
-									{
-										echo $row["Username"];
-									}
-								}
-							?>							
-						</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewUser.php">
-						<span class = "icon"><i class = "fa fa-users"></i></span>
-						<span class = "title">Users</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewCompany.php">
-						<span class = "icon"><i class = "fa fa-building"></i></span>
-						<span class = "title">Companies</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewTree.php">
-						<span class = "icon"><i class = "fa fa-leaf"></i></span>
-						<span class = "title">Trees</span>
-					</a>
-				</li>
-				<li>
-					<a class = "active" href = "viewBlock.php">
-						<span class = "icon"><i class = "fa fa-tree"></i></span>
-						<span class = "title">Blocks</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewOrchard.php">
-						<span class = "icon"><i class = "fa fa-map"></i></span>
-						<span class = "title">Orchards</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewSale.php">
-						<span class = "icon"><i class = "fa fa-line-chart"></i></span>
-						<span class = "title">Sales</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewReport.php">
-						<span class = "icon"><i class = "fa fa-table"></i></span>
-						<span class = "title">Report</span>
-					</a>
-				</li>
-				<li>
-					<a href = "logoutStaff.php">
-						<span class = "icon"><i class = "fa fa-sign-out"></i></span>
-						<span class = "title">Log Out</span>
-					</a>
-				</li>
-			</ul>
-		</div>
-		
-		<div class = "main">
-			<div class = "topbar">
-				<div class = "admin">
-					<h1 style = "color: #4c5c5a;">
-						Tree Profiling Management System
-					</h1>
-				</div>
-			</div>
-			
-			<ul>
-				<li>
-					<a href = "viewBlock.php">Blocks</a>
-				</li>
-				<li>
-					<p> >> </p>
-				</li>
-				<li>
-					<a style = "font-weight: bold;">Update Block</a>
-				</li>
-			</ul>
-			
-			<form method = "POST">
-				<div class = "form-control">
-					<i class="fa fa-tree"></i>
-					<label>Block ID: </label>
-					<label><?php $updateID = $_GET['updateID'];
-												global $conn;
-												$sql = "SELECT BlockID FROM block WHERE BlockID = $updateID";
-												$result = mysqli_query($conn, $sql);
-												
-												while ($row = $result -> fetch_assoc())
-												{
-													echo $row["BlockID"];
-												}
-										  ?></label>
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-dollar"></i>
-					<label>Base Price: </label>
-					<input type = "text"
-						   name = "baseprice"
-						   id = "baseprice"
-						   value = "<?php $updateID = $_GET['updateID'];
-												global $conn;
-												$sql = "SELECT BasePrice FROM block WHERE BlockID = $updateID;";
-												$result = mysqli_query($conn, $sql);
-												
-												while ($row = $result -> fetch_assoc())
-												{
-													echo $row["BasePrice"];
-												}
-										  ?>">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<i class="fa fa-map"></i>
-					<label>Orchard ID: </label>
-					<input type = "text"
-						   name = "orchardID"
-						   id = "orchardID"
-						   value = "<?php $updateID = $_GET['updateID'];
-												global $conn;
-												$sql = "SELECT OrchardID FROM block WHERE BlockID = $updateID;";
-												$result = mysqli_query($conn, $sql);
-												
-												while ($row = $result -> fetch_assoc())
-												{
-													echo $row["OrchardID"];
-												}
-										  ?>">
-					<small>Invalid</small>
-				</div>
-				<div class = "form-control">
-					<input type = "submit" name = "updateBlock" value = "Update"></input>
-				</div>
-			</form>
-		</div>
-	</div>
+    <div class="app-wrapper">
+        
+        <!-- Sidebar -->
+        <?php include(__DIR__ . '/../../includes/sidebar.php'); ?>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h1 class="topbar-title">Tree Block Inventory & Spatial Mapping</h1>
+            </header>
+
+            <div class="content-body">
+                <!-- Breadcrumb -->
+                <ul class="breadcrumb">
+                    <li><a href="../../views/staff/inventory.php">Inventory</a></li>
+                    <li class="separator"><i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i></li>
+                    <li class="active">Update Block</li>
+                </ul>
+
+                <!-- Form Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Update Block Details</h2>
+                    </div>
+                    <div class="card-body">
+                        <?php if (!empty($error)): ?>
+                            <div class="alert-danger"><?php echo htmlspecialchars($error); ?></div>
+                        <?php endif; ?>
+
+                        <form method="POST" action="../../controllers/staff/inventoryController.php?action=updateBlock">
+                            <!-- Hidden blockID input so POST retains the target ID -->
+                            <input type="hidden" name="blockID" value="<?php echo htmlspecialchars($block['BlockID']); ?>">
+
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label>Block ID</label>
+                                    <div class="read-only-box">
+                                        #<?php echo htmlspecialchars($block['BlockID']); ?>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="baseprice">Base Price (RM)</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-dollar-sign"></i>
+                                        <input type="number" step="0.01" name="baseprice" id="baseprice" class="form-control-input" value="<?php echo htmlspecialchars($block['BasePrice']); ?>" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="orchardID">Orchard ID</label>
+                                    <div class="input-wrapper">
+                                        <i class="fa-solid fa-map-pin"></i>
+                                        <select name="orchardID" id="orchardID" class="form-control-input" required>
+                                            <option value="" disabled>Select an Orchard</option>
+                                            <?php
+                                            $orchardSql = "SELECT OrchardID FROM orchard ORDER BY OrchardID ASC";
+                                            $orchardRes = mysqli_query($conn, $orchardSql);
+                                            if ($orchardRes && mysqli_num_rows($orchardRes) > 0) {
+                                                while ($oRow = mysqli_fetch_assoc($orchardRes)) {
+                                                    $oID = htmlspecialchars($oRow['OrchardID']);
+                                                    $isSelected = ($oID == $block['OrchardID']) ? 'selected' : '';
+                                                    echo "<option value='{$oID}' {$isSelected}>Orchard {$oID}</option>";
+                                                }
+                                            }
+                                            ?>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-actions">
+                                    <button type="submit" name="updateBlock" class="btn btn-primary">
+                                        <i class="fa-solid fa-floppy-disk"></i> Update Block
+                                    </button>
+                                    <a href="../../views/staff/inventory.php" class="btn btn-secondary">Cancel</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+			<!-- Footer -->
+            <?php include(__DIR__ . '/../../includes/footer.php'); ?>
+        </main>
+    </div>
 </body>
 </html>

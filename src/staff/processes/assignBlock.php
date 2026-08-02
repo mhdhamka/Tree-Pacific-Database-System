@@ -1,449 +1,88 @@
-<!---TMF2034: Database Concept & Design (G07)--->
-<!---1. Mohammad Hamka Izzuddin Bin Mohamad Yahya (73571)--->
-<!---2. Harith Zakwan Bin Zakaria (73484)------------------->
-<!---3. Iman Tarmizi Rosalina (73496)----------------------->
-<!---4. Faizatul Fitri Bin Boestamam (75351)---------------->
+<?php 
+include(__DIR__ . '../../../config/dbConnect.php');
 
-<?php
-include(__DIR__ . '/../dbConnect.php');
-
-	$count = 0;
-
-	if(isset($_POST['assignBlock']))
-	{	
-		$clientID = $_POST['clientID'];
-		$blockID = $_POST['blockID'];
-		
-		$sql = "SELECT * FROM sale";
-		$result = mysqli_query($conn, $sql);
-
-		if ($result -> num_rows > 0)
-		{
-			while ($row = $result -> fetch_assoc())
-			{
-				$count = $row['SaleID'];
-				$count++;
-			}
-		}
-		
-		$sql = "SELECT BasePrice FROM block WHERE BlockID = '$blockID'";
-		$result = mysqli_query($conn, $sql);
-
-		if ($result -> num_rows > 0)
-		{
-			while ($row = $result -> fetch_assoc())
-			{
-				$price = $row['BasePrice'];
-			}
-		}
-		
-		$sql = "INSERT INTO sale(SaleID, ClientID, TotalPrice, DateSold)
-				VALUES('$count', '$clientID', '$price', now())";
-		$result = mysqli_query($conn, $sql);
-				
-		$sql = "INSERT INTO purchase(SaleID, BlockID, SellingPrice)
-				VALUES('$count', '$blockID', '$price')";		
-				
-		if (mysqli_query($conn, $sql))
-		{   
-			$success = false;
-			header("Location:viewSale.php");
-		}
-		else
-		{
-			echo "Error: " . $sql . "<br>" . mysqli_error($conn);
-		}
-	}
-	
+// Pre-fill blockID if passed via URL parameters
+$prefilledBlockID = isset($_GET['blockID']) ? htmlspecialchars($_GET['blockID']) : '';
 ?>
 
 <!DOCTYPE HTML>
-<html lang = "en">
+<html lang="en">
 <head>
-	<meta charset = "UTF-8">
-	<title>TreePacific | Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TreePacific | Assign Block</title>
 
-	<style>
-		*{
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-			font-family: Helvetica;
-		}
-		
-		body {
-			overflow-x: hidden;
-		}
-		
-		table tr th {
-			background-color: #859998;
-		}
-		
-		tbody {
-			align-items: center;
-		}
-		
-		.container {
-			position: relative;
-			width: 100%;
-		}
-		
-		.sidebar {
-			position: fixed;
-			width: 325px;
-			height: 100%;
-			background: #4c5c5a;
-			transition: 0.5s;
-			overflow: hidden;
-		}
-		
-		.sidebar a.active {
-			background:  #d6dbde;
-			color: #4c5c5a;
-		}
-		
-		.sidebar ul li a.active .icon .fa {
-			color: #4c5c5a;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a.active .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #4c5c5a;
-			white-space: nowrap;
-		}
-		
-		
-		.sidebar ul {
-			position: absolute;
-			top: 0;
-			left: 0;
-			width: 100%;
-		}
-		
-		.sidebar ul li {
-			position: relative;
-			width: 100%;
-			list-style: none;
-		}
+    <!-- FontAwesome & Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/x-icon" href="../../../assets/images/TREE.PNG">
 
-		
-		.sidebar ul li:hover {
-			background: #859998;
-		}
-		
-		.sidebar ul li:nth-child(1) {
-			margin-bottom: 10px;
-		}
-		
-		.sidebar ul li:nth-child(1):hover {
-			background: transparent;
-		}
-		
-		.sidebar ul li a {
-			position: relative;
-			display: block;
-			width: 100%;
-			display: flex;
-			text-decoration: none;
-		}
-		
-		.sidebar ul li a .icon { 
-			position: relative;
-			display: block;
-			min-width: 60px;
-			height: 60px;
-			line-height: 60px;
-			text-align: center;
-		}
-		
-		.sidebar ul li a .icon .fa {
-			color: #d6dbde;
-			font-size: 24px;
-		}
-		
-		.sidebar ul li a .title {
-			position: relative;
-			display: block;
-			padding: 0 10px;
-			height: 60px;
-			line-height: 60px;
-			color: #d6dbde;
-			white-space: nowrap;
-		}
-		
-		.main {
-			position: absolute;
-			width: calc(100% - 325px);
-			left: 325px;
-			min-height: 100vh;
-			background: lightgrey;
-		}
-		
-		.main .topbar {
-			width: 100%;
-			background: white;
-			height: 60px;
-			display: flex;
-			justify-content: space-between;
-			align-items: center;
-			padding: 20px;
-		}
-		
-		.main .topbar i {
-			font-size: 25px;
-		}
-		
-		.main .topbar small {
-			visibility: visible;
-			padding: 10px;
-		}
-		
-		.main .form-control {
-			padding: 20px;
-		}
-		
-		.main ul {
-			list-style-type: none;
-			overflow: hidden;
-			padding: 20px 20px 0 20px;
-		}
-		
-		.main ul li {
-			float: left;
-			padding-right: 10px;
-			color: #4c5c5a;
-		}
-		
-		.main ul li a {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.main ul li p {
-			display: block;
-			color: #4c5c5a;
-			text-decoration: none;
-		}
-		
-		.main .display-accounts {
-			padding: 20px;
-		}
-		
-		.main .display-accounts ul {
-			list-style: none;
-			padding: 0 0 20px 0;
-		}
-		
-		.main .display-accounts a {
-			text-decoration: none;
-			color: #4c5c5a; 
-		}
-		
-		.main .display-accounts .addbutton {
-			padding: 20px 0 0 0;
-		}
-		
-		.main .display-accounts .addbutton button {
-			padding: 5px;
-			border-radius: 5px;
-			border: 2px solid #4c5c5a;
-			background: #d6dbde;
-		}
-		
-		.main .display-accounts .addbutton button a {
-			color: #4c5c5a;
-		}
-		
-		.form-control {
-			padding-bottom: 20px;
-		}
-		
-		.form-control i {
-			color: #4c5c5a;
-		}
-		
-		.form-control label {
-			display: inline-block;
-			margin-bottom: 5px;
-		}
-		
-		.form-control input[type=text], input[type=email], input[type=password]{
-			border: 2px solid darkgrey;
-			border-radius: 5px;
-			display: block;
-			padding: 10px;
-			width: 50%;
-		}
-		
-		.form-control small{
-			visibility: hidden;
-		}
-		
-		.form-control input[type=submit] {
-			background-color: #d6dbde;
-			padding: 5px;
-			border-radius: 4px;
-			border: 2px solid #859998;
-			color: #4c5c5a;
-			width: 10%;
-		}
-		
-		.form-control.error small{
-			visibility: visible;
-			color: #4c5c5a;
-		}
-		
-		.form-control.success small{
-			visibility: hidden;
-		}
-		
-		.form-control.error input{
-			border-color: #4c5c5a;
-		}
-		
-		.form-control.success input{
-			border-color: #4c5c5a;
-		}
-		
-		.main table {
-			width: 100%;
-			border: 1px solid black;
-		}
-		
-		.main thead, tbody, th, tr {
-			border: 1px solid black;
-			background: #d6dbde; 
-			color: #4c5c5a;
-		}
-			
-	</style>
-	
-	<script src="https://use.fontawesome.com/59805f286a.js"></script>
-
-	<link rel="icon" type="image/x-icon" href="tree.png">
+    <link rel="stylesheet" href="../../../assets/css/staff.css">
 </head>
 
 <body>
-	<div class = "container">
-		<div class = "sidebar" id = "sidebar">
-			<ul>
-				<li>
-					<a>
-						<span class = "icon"><i class = "fa fa-user-circle"></i></span>
-						<span class = "icon" style = "color: #d6dbde">
-							<?php
-								global $conn;
-								$sql = "SELECT Username FROM user WHERE logStatus = 1 && UserType = 'S';";
-								$result = mysqli_query($conn, $sql);
-								
-								if ($result -> num_rows > 0)
-								{
-									while ($row = $result -> fetch_assoc())
-									{
-										echo $row["Username"];
-									}
-								}
-							?>							
-						</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewUser.php">
-						<span class = "icon"><i class = "fa fa-users"></i></span>
-						<span class = "title">Users</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewCompany.php">
-						<span class = "icon"><i class = "fa fa-building"></i></span>
-						<span class = "title">Companies</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewTree.php">
-						<span class = "icon"><i class = "fa fa-leaf"></i></span>
-						<span class = "title">Trees</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewBlock.php">
-						<span class = "icon"><i class = "fa fa-tree"></i></span>
-						<span class = "title">Blocks</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewOrchard.php">
-						<span class = "icon"><i class = "fa fa-map"></i></span>
-						<span class = "title">Orchards</span>
-					</a>
-				</li>
-				<li>
-					<a class = "active" href = "viewSale.php">
-						<span class = "icon"><i class = "fa fa-line-chart"></i></span>
-						<span class = "title">Sales</span>
-					</a>
-				</li>
-				<li>
-					<a href = "viewReport.php">
-						<span class = "icon"><i class = "fa fa-table"></i></span>
-						<span class = "title">Report</span>
-					</a>
-				</li>
-				<li>
-					<a href = "logoutStaff.php">
-						<span class = "icon"><i class = "fa fa-sign-out"></i></span>
-						<span class = "title">Log Out</span>
-					</a>
-				</li>
-			</ul>
-		</div>
-		
-		<div class = "main">
-			<div class = "topbar">
-				<div class = "admin">
-					<h1 style = "color: #4c5c5a;">
-						Tree Profiling Management System
-					</h1>
-				</div>
-			</div>
-			
-			<div class = "display-accounts">
-				<ul>
-					<li>
-						<a href = "viewSale.php">Sales</a>
-					</li>
-					<li>
-						<p> >> </p>
-					</li>
-					<li>
-						<a style = "font-weight: bold;">Assign Block</a>
-					</li>
-				</ul>
-				<form method = "POST">
-					<div class = "form-control">
-						<i class="fa fa-user-circle"></i>
-						<label>Client ID: </label>
-						<input type = "text" name = "clientID" id = "clientID" required>
-						<small>Invalid</small>
-					</div>
-					<div class = "form-control">
-						<i class="fa fa-tree"></i>
-						<label>Block ID: </label>
-						<input type = "text" name = "blockID" id = "blockID" required>
-						<small>Invalid</small>
-					</div>
-					<div class = "form-control">
-						<input type = "submit" name = "assignBlock" value = "Assign"></input>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <?php include(__DIR__ . '/../../includes/sidebar.php'); ?>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <h1 class="topbar-title">Client & Sales Commercial Operations</h1>
+            </header>
+
+            <!-- Content Body -->
+            <div class="content-body">
+                <!-- Breadcrumb Navigation -->
+                <nav class="breadcrumb">
+                    <a href="../../views/staff/sales.php">Clients & Sales</a>
+                    <span class="separator"><i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i></span>
+                    <span class="active">Assign Block</span>
+                </nav>
+
+                <!-- Form Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title"><i class="fa-solid fa-user-plus icon-green"></i> Assign Block to Client</h2>
+                    </div>
+                    <div class="card-body">
+                        <form action="../../controllers/staff/inventoryController.php" method="POST">
+                            <div class="form-group">
+                                <label for="clientID">Client ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fa fa-user"></i>
+                                    <input type="text" class="form-control-input" name="clientID" id="clientID" placeholder="Enter Client ID" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="blockID">Block ID</label>
+                                <div class="input-wrapper">
+                                    <i class="fa fa-tree"></i>
+                                    <input type="text" class="form-control-input" name="blockID" id="blockID" value="<?php echo $prefilledBlockID; ?>" placeholder="Enter Block ID" required>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="submit" name="assignBlock" class="btn btn-primary">
+                                    <i class="fa-solid fa-check"></i> Assign Block
+                                </button>
+                                <a href="../../views/staff/sales.php" class="btn btn-secondary">
+                                    <i class="fa-solid fa-xmark"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <?php include(__DIR__ . '/../../includes/footer.php'); ?>
+
+        </main>
+    </div>
 </body>
 </html>
