@@ -84,8 +84,8 @@ While the original system laid the foundational backend and database architectur
 - **MySQL / MariaDB**
 
 ## Frontend
-- **HTML5 & CSS3**
-- **JavaScript** (ES6+)
+- **CSS3**
+- **JavaScript** 
 - **FontAwesome Icons**
 
 ## Spatial Mapping & Visualization
