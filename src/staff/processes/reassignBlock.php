@@ -1,57 +1,9 @@
 <?php 
-include(__DIR__ . '../../../config/dbConnect.php');
-?>
+include(__DIR__ . '/../../config/dbConnect.php');
 
-<?php
-    $count = 0;
-
-    if(isset($_POST['reassignBlock']))
-    {   
-        $updateID = $_POST['updateID'];
-        $saleID = $_GET['saleID'];
-        $blockID = $_GET['blockID'];
-        
-        $sql = "SELECT * FROM sale";
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && $result->num_rows > 0)
-        {
-            while ($row = $result->fetch_assoc())
-            {
-                $count = $row['SaleID'];
-                $count++;
-            }
-        }
-        
-        $sql = "SELECT BasePrice FROM block WHERE BlockID = '$blockID'";
-        $result = mysqli_query($conn, $sql);
-
-        if ($result && $result->num_rows > 0)
-        {
-            while ($row = $result->fetch_assoc())
-            {
-                $price = $row['BasePrice'];
-            }
-        }
-        
-        $sql = "INSERT INTO sale(SaleID, ClientID, TotalPrice, DateSold)
-                VALUES('$count', '$updateID', '$price', now())";
-        $result = mysqli_query($conn, $sql);
-                
-        $sql = "INSERT INTO purchase(SaleID, BlockID, SellingPrice)
-                VALUES('$count', '$blockID', '$price')";        
-                
-        if (mysqli_query($conn, $sql))
-        {   
-            $success = false;
-            header("Location:viewSale.php");
-            exit();
-        }
-        else
-        {
-            $errorMsg = "Error: " . mysqli_error($conn);
-        }
-    }
+$saleID = isset($_GET['saleID']) ? htmlspecialchars($_GET['saleID']) : '';
+$blockID = isset($_GET['blockID']) ? htmlspecialchars($_GET['blockID']) : '';
+$updateID = isset($_GET['updateID']) ? htmlspecialchars($_GET['updateID']) : '';
 ?>
 
 <!DOCTYPE HTML>
@@ -60,9 +12,6 @@ include(__DIR__ . '../../../config/dbConnect.php');
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TreePacific | Reassign Block</title>
-    
-    <!-- Font Awesome -->
-    <script src="https://use.fontawesome.com/59805f286a.js"></script>
     
     <!-- FontAwesome & Fonts -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -77,7 +26,7 @@ include(__DIR__ . '../../../config/dbConnect.php');
 <body>
     <div class="app-wrapper">
         <!-- Sidebar -->
-        <?php include(__DIR__ . '../../../includes/sidebar.php'); ?>
+        <?php include(__DIR__ . '/../../includes/sidebar.php'); ?>
 
         <!-- Main Content Area -->
         <main class="main-content">
@@ -87,19 +36,11 @@ include(__DIR__ . '../../../config/dbConnect.php');
 
             <div class="content-body">
                 <!-- Breadcrumb Navigation -->
-                <nav>
-                    <ul class="breadcrumb">
-                        <li><a href="../../views/staff/sales.php">Sales & Clients</a></li>
-                        <li class="separator"><i class="fa fa-angle-right"></i></li>
-                        <li class="active">Reassign Block</li>
-                    </ul>
+                <nav class="breadcrumb">
+                    <a href="../../views/staff/sales.php">Sales & Clients</a>
+                    <span class="separator"><i class="fa-solid fa-chevron-right" style="font-size: 0.75rem;"></i></span>
+                    <span class="active">Reassign Block</span>
                 </nav>
-
-                <?php if (isset($errorMsg)): ?>
-                    <div class="alert alert-danger">
-                        <i class="fa fa-exclamation-circle"></i> <?php echo $errorMsg; ?>
-                    </div>
-                <?php endif; ?>
 
                 <!-- Table Card -->
                 <div class="card">
@@ -130,26 +71,26 @@ include(__DIR__ . '../../../config/dbConnect.php');
                                 
                                         $result = mysqli_query($conn, $sql);
 
-                                        if ($result && $result->num_rows > 0)
+                                        if ($result && mysqli_num_rows($result) > 0)
                                         {
-                                            while ($row = $result->fetch_assoc())
+                                            while ($row = mysqli_fetch_assoc($result))
                                             {
-                                                $blockID = htmlspecialchars($row['BlockID']);
+                                                $rowBlockID = htmlspecialchars($row['BlockID']);
                                                 $baseprice = htmlspecialchars($row['BasePrice']);
                                                 $orchardID = htmlspecialchars($row['OrchardID']);
-                                                $saleID = htmlspecialchars($row['SaleID']);
+                                                $rowSaleID = htmlspecialchars($row['SaleID']);
                                                 $userID = htmlspecialchars($row['UserID']);
                                                 $realname = htmlspecialchars($row['RealName']);
 
                                                 echo "<tr>
-                                                        <td><span class='badge-block'>#".$blockID."</span></td>
+                                                        <td><span class='badge-block'>#".$rowBlockID."</span></td>
                                                         <td><span class='price-text'>RM ".$baseprice."</span></td>
                                                         <td>".$orchardID."</td>
-                                                        <td>#".$saleID."</td>
+                                                        <td>#".$rowSaleID."</td>
                                                         <td>#".$userID."</td>
                                                         <td class='company-name'>".$realname."</td>
                                                         <td>
-                                                            <a class='btn-assign' href='assignBlock.php?updateID={$row['UserID']}&saleID={$row['SaleID']}&blockID={$row['BlockID']}'>
+                                                            <a class='btn-assign' href='reassignBlock.php?updateID={$row['UserID']}&saleID={$row['SaleID']}&blockID={$row['BlockID']}'>
                                                                 <i class='fa fa-exchange'></i> Reassign
                                                             </a>
                                                         </td>
@@ -173,27 +114,18 @@ include(__DIR__ . '../../../config/dbConnect.php');
                         <h2 class="card-title">Reassign Details</h2>
                     </div>
                     <div class="card-body">
-                        <form method="POST">
+                        <!-- Directed to salesController.php with GET parameters for block assignment -->
+                        <form action="../../controllers/staff/salesController.php?blockID=<?php echo $blockID; ?>&saleID=<?php echo $saleID; ?>" method="POST">
                             <div class="form-group">
-                                <label for="updateID">User ID</label>
+                                <label for="updateID">New User ID</label>
                                 <div class="input-wrapper">
                                     <i class="fa fa-user-circle"></i>
                                     <input type="text" 
                                            class="form-control-input" 
                                            name="updateID" 
                                            id="updateID"
-                                           value="<?php 
-                                                if (isset($_GET['updateID'])) {
-                                                    $updateID = mysqli_real_escape_string($conn, $_GET['updateID']);
-                                                    $sql = "SELECT UserID FROM client WHERE UserID = '$updateID';";
-                                                    $result = mysqli_query($conn, $sql);
-                                                    
-                                                    if ($result && $row = $result->fetch_assoc()) {
-                                                        echo htmlspecialchars($row["UserID"]);
-                                                    }
-                                                }
-                                           ?>" 
-                                           placeholder="Enter User ID">
+                                           value="<?php echo $updateID; ?>" 
+                                           placeholder="Enter User ID" required>
                                 </div>
                             </div>
                             <div class="form-actions">
@@ -208,7 +140,7 @@ include(__DIR__ . '../../../config/dbConnect.php');
             </div>
 
             <!-- Footer -->
-            <?php include(__DIR__ . '../../../includes/footer.php'); ?>
+            <?php include(__DIR__ . '/../../includes/footer.php'); ?>
         </main>
     </div>
 </body>

@@ -29,13 +29,13 @@ include(__DIR__ . '../../../config/dbConnect.php');
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="topbar">
-                <h1 class="topbar-title">Tree Profiling Management System</h1>
+                <h1 class="topbar-title">Client & Sales Commercial Operations</h1>
             </header>
 
             <div class="content-body">
                 <!-- Breadcrumb Navigation -->
                 <ul class="breadcrumb">
-                    <li><a href="../../views/staff/sales.php">Clients & Sales</a></li>
+                    <li><a href="../../views/staff/sales.php">Sales & Clients</a></li>
                     <li class="separator"><i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i></li>
                     <li class="active">Add Company</li>
                 </ul>
@@ -52,7 +52,7 @@ include(__DIR__ . '../../../config/dbConnect.php');
                         <h2 class="card-title">Add New Company</h2>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="../../controllers/staff/companyController.php?action=add">
+                        <form method="POST" action="../../controllers/staff/salesController.php?action=add">
                             <div class="form-group">
                                 <label for="companyname">Company Name</label>
                                 <div class="input-wrapper">

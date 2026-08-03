@@ -1,40 +1,6 @@
 <?php
-
-    include(__DIR__ . '../../../config/dbConnect.php');
-
-    session_start();
-    $error_msg = "";
-
-    // Handle Login Post Submission
-    if ($_SERVER["REQUEST_METHOD"] === "POST") {
-        $userid = trim($_POST['userid'] ?? '');
-        $password = trim($_POST['password'] ?? '');
-
-        if (!empty($userid) && !empty($password)) {
-            // Prepared statement to prevent SQL Injection
-            $stmt = $conn->prepare("SELECT UserID, Username, PasswordHash FROM user WHERE UserID = ? AND UserType = 'C' LIMIT 1");
-            $stmt->bind_param("s", $userid);
-            $stmt->execute();
-            $result = $stmt->get_result();
-
-            if ($row = $result->fetch_assoc()) {
-                // Verify password (supports hashed passwords; falls back to direct match if legacy)
-                if (password_verify($password, $row['PasswordHash']) || $password === $row['PasswordHash']) {
-                    $_SESSION['login_user'] = $row['UserID'];
-                    $_SESSION['username']   = $row['Username'];
-                    header("Location: MenuClient.php");
-                    exit();
-                } else {
-                    $error_msg = "Invalid User ID or Password.";
-                }
-            } else {
-                $error_msg = "Invalid User ID or Password.";
-            }
-            $stmt->close();
-        } else {
-            $error_msg = "Please fill in all fields.";
-        }
-    }
+include(__DIR__ . '/../../config/dbConnect.php');
+include(__DIR__ . '/../../controllers/auth/authController.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -49,8 +15,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../../assets/css/loginClient.css">
-
 </head>
 <body>
 
@@ -73,7 +40,7 @@
             <section class="card-hero">
                 <img src="../../../assets/images/TREE.PNG" alt="PacificTree Logo">
                 <h2>PacificTree</h2>
-                <p>Tree Profiling Management System</p>
+                <p>Enterprise GIS & Forestry Operations Platform</p>
             </section>
 
             <!-- Right Login Form Side -->
@@ -90,9 +57,12 @@
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                <form method="POST" action="../../controllers/auth/authController.php">
+                    <!-- ADDED: Hidden field required by authController.php -->
+                    <input type="hidden" name="action" value="login_client">
+
                     <div class="form-group">
-                        <label for="userid">User ID</label>
+                        <label for="userid">User ID / Username / Email</label>
                         <input type="text" id="userid" name="userid" placeholder="e.g. C1001" required autocomplete="username">
                     </div>
 
@@ -104,10 +74,12 @@
                     <button type="submit" class="btn-submit">LOG IN</button>
                 </form>
 
-                <a href="OptionLogin.php" class="btn-switch">Change User Type</a>
+                <a href="OptionLogin.php" class="btn-switch">
+                    <i class="fa-solid fa-arrows-rotate"></i> Change User Type
+                </a>
 
                 <div class="form-footer">
-                    New to PacificTree? <a href="SignUpClient.php">Sign Up</a>
+                    New to PacificTree? <a href="register.php">Sign Up</a>
                 </div>
             </section>
 
@@ -115,9 +87,7 @@
     </main>
 
     <!-- Footer -->
-    <footer>
-        <p>&copy; <?php echo date("Y"); ?> PACIFICTREE. All rights reserved.</p>
-    </footer>
+    <?php include(__DIR__ . '/../../includes/footerClient.php'); ?>
 
 </body>
 </html>

@@ -1,5 +1,5 @@
 <?php 
-include(__DIR__ . '../../../config/dbConnect.php');
+include(__DIR__ . '/../../config/dbConnect.php');
 
 // Pre-fill blockID if passed via URL parameters
 $prefilledBlockID = isset($_GET['blockID']) ? htmlspecialchars($_GET['blockID']) : '';
@@ -49,7 +49,8 @@ $prefilledBlockID = isset($_GET['blockID']) ? htmlspecialchars($_GET['blockID'])
                         <h2 class="card-title"><i class="fa-solid fa-user-plus icon-green"></i> Assign Block to Client</h2>
                     </div>
                     <div class="card-body">
-                        <form action="../../controllers/staff/inventoryController.php" method="POST">
+                        <!-- Updated action path to salesController.php -->
+                        <form action="../../controllers/staff/salesController.php" method="POST">
                             <div class="form-group">
                                 <label for="clientID">Client ID</label>
                                 <div class="input-wrapper">

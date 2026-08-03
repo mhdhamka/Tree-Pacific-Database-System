@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PacificTree | Tree Profiling Management System</title>
+    <title>PacificTree | Enterprise GIS & Forestry Operations Platform</title>
     <link rel="icon" type="image/x-icon" href="../../../assets/images/TREE.PNG">
     
     <!-- Modern Font Family -->
@@ -40,7 +40,7 @@
             <section class="hero-brand-section">
                 <img src="../../../assets/images/TREE.PNG" alt="PacificTree Logo">
                 <h2>PacificTree</h2>
-                <p>Tree Profiling Management System</p>
+                <p>Enterprise GIS & Forestry Operations Platform</p>
             </section>
 
             <!-- Right Panel: Access Actions -->

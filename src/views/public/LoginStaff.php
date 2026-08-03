@@ -1,41 +1,6 @@
-
 <?php
-include(__DIR__ . '../../../config/dbConnect.php');
-session_start();
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-    $Userid = trim($_POST['userid'] ?? '');
-    $Password = trim($_POST['password'] ?? '');
-
-    if (!empty($Userid) && !empty($Password)) {
-        // Prepared statement to prevent SQL Injection
-        $stmt = mysqli_prepare($conn, "SELECT UserID, PasswordHash FROM user WHERE UserID = ? AND UserType = 'S' LIMIT 1");
-        mysqli_stmt_bind_param($stmt, "s", $Userid);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-
-        if ($row = mysqli_fetch_assoc($result)) {
-            // Verify password hash (fallback to exact match for legacy plaintext)
-            $passwordValid = password_verify($Password, $row['PasswordHash']) || ($Password === $row['PasswordHash']);
-
-            if ($passwordValid) {
-                $_SESSION['login_user'] = $row['UserID'];
-
-                // Update user login status
-                $updateStmt = mysqli_prepare($conn, "UPDATE user SET LogStatus = 1 WHERE UserID = ?");
-                mysqli_stmt_bind_param($updateStmt, "s", $row['UserID']);
-                mysqli_stmt_execute($updateStmt);
-
-                header("Location: ../staff/dashboard.php");
-                exit();
-            }
-        }
-
-        // Redirect on invalid login
-        header("Location: LoginStaff.php?remark_login=failed");
-        exit();
-    }
-}
+include(__DIR__ . '/../../config/dbConnect.php');
+include(__DIR__ . '/../../controllers/auth/authController.php');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -47,9 +12,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="../../../assets/css/loginStaff.css">
 
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../../assets/css/loginStaff.css">
 </head>
 <body>
 
@@ -70,7 +36,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <section class="card-hero">
                 <img src="../../../assets/images/TREE.PNG" alt="PacificTree Logo">
                 <h2>PacificTree</h2>
-                <p>Tree Profiling Management System</p>
+                <p>Enterprise GIS & Forestry Operations Platform</p>
             </section>
 
             <!-- Right Form Section -->
@@ -86,9 +52,12 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     </div>
                 <?php endif; ?>
 
-                <form method="POST" action="<?php echo htmlspecialchars($_SERVER['PHP_SELF']); ?>">
+                <form method="POST" action="../../controllers/auth/authController.php">
+                    <!-- ADDED: Hidden field required by authController.php -->
+                    <input type="hidden" name="action" value="login_staff">
+
                     <div class="form-group">
-                        <label for="userid">Staff ID</label>
+                        <label for="userid">Staff ID / Username / Email</label>
                         <input type="text" placeholder="e.g. STF-102" id="userid" name="userid" required autofocus>
                     </div>
 
@@ -100,20 +69,17 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
                     <button type="submit" name="submit" class="btn-submit">LOG IN</button>
                 </form>
 
-                <a href="OptionLogin.php" class="btn-switch">Change User Type</a>
+                <a href="OptionLogin.php" class="btn-switch">
+                    <i class="fa-solid fa-arrows-rotate"></i> Change User Type
+                </a>
 
-                <div class="form-footer">
-                    New to PacificTree? <a href="SignUpStaff.php">Sign Up</a>
-                </div>
             </section>
 
         </div>
     </main>
 
-    <!-- Page Footer -->
-    <footer>
-        <p>&copy; <?php echo date("Y"); ?> PACIFICTREE. All rights reserved.</p>
-    </footer>
+    <!-- Footer -->
+    <?php include(__DIR__ . '/../../includes/footerClient.php'); ?>
 
 </body>
 </html>

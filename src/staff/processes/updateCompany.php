@@ -49,13 +49,13 @@ if ($updateID > 0) {
         <!-- Main Content Area -->
         <main class="main-content">
             <header class="topbar">
-                <h1 class="topbar-title">Tree Profiling Management System</h1>
+                <h1 class="topbar-title">Client & Sales Commercial Operations</h1>
             </header>
 
             <div class="content-body">
                 <!-- Breadcrumb Navigation -->
                 <ul class="breadcrumb">
-                    <li><a href="../../views/staff/companies.php">Companies</a></li>
+                    <li><a href="../../views/staff/companies.php">Sales & Clients</a></li>
                     <li class="separator"><i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i></li>
                     <li class="active">Update Company</li>
                 </ul>
@@ -72,7 +72,7 @@ if ($updateID > 0) {
                         <h2 class="card-title">Update Company Record</h2>
                     </div>
                     <div class="card-body">
-                        <form method="POST" action="../../controllers/staff/companyController.php?action=update&updateID=<?php echo $updateID; ?>">
+                        <form method="POST" action="../../controllers/staff/salesController.php?action=update&updateID=<?php echo $updateID; ?>">
                             
                             <!-- Hidden input to pass CompanyID during form submit -->
                             <input type="hidden" name="companyID" value="<?php echo htmlspecialchars($companyData['CompanyID'] ?? $updateID); ?>">

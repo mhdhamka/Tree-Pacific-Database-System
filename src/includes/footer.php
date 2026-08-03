@@ -1,7 +1,7 @@
 <!-- Footer -->
 <footer class="app-footer">
     <div>
-        &copy; <?php echo date('Y'); ?> <strong>TreePacific</strong>. All Rights Reserved.
+        &copy; <?php echo date('Y'); ?> <strong>PacificTree</strong>. All Rights Reserved.
     </div>
     <ul class="footer-links">
         <li><a href="viewReport.php"><i class="fa-solid fa-chart-pie"></i> Analytics</a></li>
