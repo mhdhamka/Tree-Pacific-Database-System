@@ -33,13 +33,31 @@ The platform bridges the gap between field operations and commercial client mana
 
 ---
 
-## Key Features
+## 📸 Dashboard Preview
 
-### 📍 Interactive GIS & Spatial Mapping
+<div align="center">
+  <img src="assets/images/inventory-map.png" alt="PacificTree GIS & Inventory Dashboard" width="100%">
+  <p><em>Tree Block Inventory & Interactive Spatial Mapping View (Staff Dashboard)</em></p>
+</div>
+
+---
+
+## 🔄 Project Evolution
+
 This project is a direct full-stack web evolution of my initial **Tree Pacific Database System**. 
 
 While the original system laid the foundational backend and database architecture, **PacificTree** expands the concept into a comprehensive, production-grade enterprise application by introducing:
 
+- **Interactive GIS Spatial Mapping:** Transitioned from static database records to visual map rendering with Leaflet.js and OpenStreetMap.
+- **Client & Staff Portals:** Implemented Role-Based Access Control (RBAC) to separate administrative field operations from client investment portfolios.
+- **Commercial Operations:** Added tree block allocation, financial analytics, order processing, and automated document generation (PDF & Excel/CSV).
+- **Modern Responsive UI/UX:** Built a sleek, accessible dashboard interface equipped with real-time analytics powered by Chart.js.
+
+---
+
+## Key Features
+
+### 📍 Interactive GIS & Spatial Mapping
 * **Real-time Map Coordinates:** Interactive map visualization powered by Leaflet.js and OpenStreetMap.
 * **GPS Pin Positioning:** Custom tree location markers displaying species, health status, pricing, and exact GPS coordinates (latitude/longitude).
 * **Reverse Geocoding:** Instant location identification and address mapping using the Nominatim API.
@@ -66,7 +84,7 @@ While the original system laid the foundational backend and database architectur
 - **MySQL / MariaDB**
 
 ## Frontend
-- **CSS3**
+- **HTML5 & CSS3**
 - **JavaScript** (ES6+)
 - **FontAwesome Icons**
 
@@ -85,6 +103,8 @@ While the original system laid the foundational backend and database architectur
 
 ```text
 PacificTree/
+├── assets/
+│   └── inventory-map.png # Snapshot for README
 ├── database/
 │   └── tree.sql
 ├── src/
@@ -100,25 +120,6 @@ PacificTree/
 ├── composer.json
 ├── composer.lock
 └── README.md
-
-```
-
----
-
-# Future Improvements
-
-* [ ] Real-time satellite layer integration for drone/aerial forestry inspections
-* [ ] Automated email notifications for order completions and status updates
-* [ ] REST API endpoints for field staff mobile applications
-* [ ] Multi-currency support for international timber clients
-* [ ] Docker containerization for production deployment
-
----
-
-# License
-
-This project is released under the **MIT License**.
-
 Feel free to learn from, fork, and adapt this project for your own builds.
 
 ---
