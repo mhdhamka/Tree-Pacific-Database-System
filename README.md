@@ -122,6 +122,7 @@ PacificTree/
 └── README.md
 Feel free to learn from, fork, and adapt this project for your own builds.
 
+```
 ---
 
 ⭐ If you found this project interesting, consider giving it a star!
