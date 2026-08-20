@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌲 PacificTree: Enterprise GIS & Forestry Operations Platform
+# PacificTree: Enterprise GIS & Forestry Operations Platform
 
 ### A Full-Stack Spatial Mapping, Inventory & Commercial Management Platform
 
@@ -33,7 +33,7 @@ The platform bridges the gap between field operations and commercial client mana
 
 ---
 
-## 📸 Dashboard Preview
+## Dashboard Preview
 
 <div align="center">
   <img src="assets/images/inventory-map.png" alt="PacificTree GIS & Inventory Dashboard" width="100%">
@@ -42,7 +42,7 @@ The platform bridges the gap between field operations and commercial client mana
 
 ---
 
-## 🔄 Project Evolution
+## Project Evolution
 
 This project is a direct full-stack web evolution of my initial **Tree Pacific Database System**. 
 
@@ -57,21 +57,21 @@ While the original system laid the foundational backend and database architectur
 
 ## Key Features
 
-### 📍 Interactive GIS & Spatial Mapping
+### Interactive GIS & Spatial Mapping
 * **Real-time Map Coordinates:** Interactive map visualization powered by Leaflet.js and OpenStreetMap.
 * **GPS Pin Positioning:** Custom tree location markers displaying species, health status, pricing, and exact GPS coordinates (latitude/longitude).
 * **Reverse Geocoding:** Instant location identification and address mapping using the Nominatim API.
 
-### 🌳 Tree Block Inventory Management
+### Tree Block Inventory Management
 * **Comprehensive CRUD Operations:** Track species names, grades, heights, diameters, health metrics, and block prices.
 * **Block Assignment System:** Group individual trees into commercial blocks for structured inventory allocation.
 
-### 💼 Commercial Operations & Client Portal
+### Commercial Operations & Client Portal
 * **Role-Based Access Control (RBAC):** Distinct dashboards and access permissions tailored for Staff Administrators and Commercial Clients.
 * **Sales & Block Allocation:** Seamless workflow for assigning tree blocks to client companies.
 * **Client Portfolio Dashboard:** Dedicated client view to monitor order histories, acquired tree blocks, and tree growth metrics.
 
-### 📊 Reports & Financial Analytics
+### Reports & Financial Analytics
 * **Visual Dashboards:** Real-time revenue distribution charts, inventory status gauges, and portfolio valuations built with Chart.js.
 * **Automated Document Exports:** Downloadable PDF reports (via DomPDF) and Excel/CSV spreadsheets (via PhpSpreadsheet) for offline auditing.
 
@@ -125,6 +125,6 @@ Feel free to learn from, fork, and adapt this project for your own builds.
 ```
 ---
 
-⭐ If you found this project interesting, consider giving it a star!
+If you found this project interesting, consider giving it a star!
 
 Made with ❤️ by [mdhamka](https://www.google.com/search?q=https://github.com/mdhamka)
