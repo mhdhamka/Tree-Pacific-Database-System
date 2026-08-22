@@ -127,4 +127,4 @@ Feel free to learn from, fork, and adapt this project for your own builds.
 
 If you found this project interesting, consider giving it a star!
 
-Made with ❤️ by [mdhamka](https://github.com/mdhamka)
+Made with ❤️ by [mhdhamka](https://github.com/mhdhamka)
